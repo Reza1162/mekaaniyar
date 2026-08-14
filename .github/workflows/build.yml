@@ -1,0 +1,57 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: دانلود فونت فارسی
+        run: |
+          mkdir -p assets/fonts
+          curl -L -o assets/fonts/Vazirmatn-Regular.ttf https://github.com/rastikerdar/vazirmatn/raw/main/fonts/ttf/Vazirmatn-Regular.ttf
+          curl -L -o assets/fonts/Vazirmatn-Bold.ttf https://github.com/rastikerdar/vazirmatn/raw/main/fonts/ttf/Vazirmatn-Bold.ttf
+
+      - run: flutter pub get
+
+      - run: flutter create --platforms=android .
+
+      - name: پچ Gradle
+        run: |
+          python3 - "android/app/build.gradle.kts" << 'PYEOF'
+          import sys, re, os
+          path = sys.argv[1]
+          if not os.path.exists(path):
+              path = "android/app/build.gradle"
+          with open(path) as f:
+              c = f.read()
+          is_kts = path.endswith(".kts")
+          c = re.sub(r'compileSdk\s*=?\s*\d+', ('compileSdk = 36' if is_kts else 'compileSdk 36'), c)
+          flag = "isCoreLibraryDesugaringEnabled = true" if is_kts else "coreLibraryDesugaringEnabled true"
+          if flag not in c and "compileOptions {" in c:
+              c = c.replace("compileOptions {", f"compileOptions {{\n        {flag}", 1)
+          dep = 'coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")' if is_kts else 'coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"'
+          if dep not in c:
+              if "dependencies {" in c:
+                  c = c.replace("dependencies {", f"dependencies {{\n    {dep}", 1)
+              else:
+                  c += f"\ndependencies {{\n    {dep}\n}}\n"
+          open(path, "w").write(c)
+          print("patched OK")
+          PYEOF
+
+      - run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mekaaniyar-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
