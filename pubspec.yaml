@@ -29,6 +29,7 @@ flutter:
   assets:
     - assets/fonts/
     - assets/content/
+    - assets/content/diagnostic.json
   fonts:
     - family: Vazir
       fonts:

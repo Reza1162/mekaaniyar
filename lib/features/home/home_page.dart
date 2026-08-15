@@ -4,6 +4,7 @@ import '../../data/content_repository.dart';
 import '../chapters/chapter_page.dart';
 import '../search/search_page.dart';
 import '../bookmarks/bookmarks_page.dart';
+import '../diagnostic/diagnostic_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -62,6 +63,11 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
             label: 'فصل‌ها',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.search_outlined),
+            selectedIcon: Icon(Icons.search),
+            label: 'عیب‌یاب',
           ),
           NavigationDestination(
             icon: Icon(Icons.bookmark_outline),
