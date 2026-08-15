@@ -3,6 +3,7 @@ import '../../core/theme/app_theme.dart';
 import '../../data/content_repository.dart';
 import '../chapters/chapter_page.dart';
 import '../search/search_page.dart';
+import '../bookmarks/bookmarks_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   List<Chapter> _chapters = [];
   bool _loading = true;
+  int _tab = 0;
 
   @override
   void initState() {
@@ -45,26 +47,52 @@ class _HomePageState extends State<HomePage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(child: _buildHeader()),
-                SliverPadding(
-                  padding: const EdgeInsets.all(16),
-                  sliver: SliverGrid(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, i) => _ChapterCard(chapter: _chapters[i]),
-                      childCount: _chapters.length,
-                    ),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 1.1,
-                    ),
-                  ),
-                ),
+          : IndexedStack(
+              index: _tab,
+              children: [
+                _buildChapters(),
+                const BookmarksPage(),
               ],
             ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.menu_book_outlined),
+            selectedIcon: Icon(Icons.menu_book),
+            label: 'فصل‌ها',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bookmark_outline),
+            selectedIcon: Icon(Icons.bookmark),
+            label: 'بوک‌مارک',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChapters() {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader()),
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (context, i) => _ChapterCard(chapter: _chapters[i]),
+              childCount: _chapters.length,
+            ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.1,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -86,9 +114,14 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
-                Text('مکانیار', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                Text('مکانیار',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold)),
                 SizedBox(height: 6),
-                Text('دستیار فنی هر مکانیک', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                Text('دستیار فنی هر مکانیک',
+                    style: TextStyle(color: Colors.white70, fontSize: 13)),
               ],
             ),
           ),
@@ -105,7 +138,8 @@ class _ChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Color(int.parse(chapter.color.replaceFirst('#', 'FF'), radix: 16));
+    final color = Color(
+        int.parse(chapter.color.replaceFirst('#', 'FF'), radix: 16));
     return InkWell(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ChapterPage(chapter: chapter)),
@@ -127,18 +161,31 @@ class _ChapterCard extends StatelessWidget {
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.menu_book_outlined, color: color, size: 24),
+              child:
+                  Icon(Icons.menu_book_outlined, color: color, size: 24),
             ),
             const Spacer(),
-            Text(chapter.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(chapter.title,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 14)),
             const SizedBox(height: 4),
-            Text(chapter.description, style: const TextStyle(fontSize: 10, color: Colors.grey), maxLines: 2, overflow: TextOverflow.ellipsis),
+            Text(chapter.description,
+                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
             if (chapter.isPro)
               Container(
                 margin: const EdgeInsets.only(top: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: AppTheme.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                child: const Text('حرفه‌ای', style: TextStyle(color: AppTheme.accent, fontSize: 10, fontWeight: FontWeight.bold)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                    color: AppTheme.accent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4)),
+                child: const Text('حرفه‌ای',
+                    style: TextStyle(
+                        color: AppTheme.accent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
               ),
           ],
         ),

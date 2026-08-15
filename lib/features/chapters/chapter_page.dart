@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/content_repository.dart';
+import '../../data/bookmark_db.dart';
+import '../../data/pro_manager.dart';
+import '../pro/pro_page.dart';
 
 class ChapterPage extends StatelessWidget {
   final Chapter chapter;
@@ -12,24 +15,47 @@ class ChapterPage extends StatelessWidget {
     final color = Color(int.parse(chapter.color.replaceFirst('#', 'FF'), radix: 16));
     return Scaffold(
       appBar: AppBar(title: Text(chapter.title)),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: chapter.sections.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
-        itemBuilder: (context, i) {
-          final sec = chapter.sections[i];
-          return Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: color.withOpacity(0.1),
-                child: Icon(Icons.article_outlined, color: color),
-              ),
-              title: Text(sec.title, style: const TextStyle(fontWeight: FontWeight.w600)),
-              trailing: const Icon(Icons.chevron_left, color: Colors.grey),
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SectionPage(section: sec, color: color)),
-              ),
-            ),
+      body: FutureBuilder<bool>(
+        future: ProManager.isPro(),
+        builder: (context, snap) {
+          final isPro = snap.data ?? false;
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: chapter.sections.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            itemBuilder: (context, i) {
+              final sec = chapter.sections[i];
+              final locked = chapter.isPro && !isPro;
+              return Card(
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: color.withOpacity(0.1),
+                    child: Icon(
+                      locked ? Icons.lock_outline : Icons.article_outlined,
+                      color: locked ? Colors.grey : color,
+                    ),
+                  ),
+                  title: Text(sec.title,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: locked ? Colors.grey : null)),
+                  trailing: const Icon(Icons.chevron_left, color: Colors.grey),
+                  onTap: () {
+                    if (locked) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ProPage()),
+                      );
+                    } else {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SectionPage(section: sec, color: color),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              );
+            },
           );
         },
       ),
@@ -37,17 +63,43 @@ class ChapterPage extends StatelessWidget {
   }
 }
 
-class SectionPage extends StatelessWidget {
+class SectionPage extends StatefulWidget {
   final Section section;
   final Color color;
   const SectionPage({super.key, required this.section, required this.color});
 
   @override
+  State<SectionPage> createState() => _SectionPageState();
+}
+
+class _SectionPageState extends State<SectionPage> {
+  bool _isBookmarked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    BookmarkDB.isBookmarked(widget.section.id).then((v) {
+      setState(() => _isBookmarked = v);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(section.title)),
+      appBar: AppBar(
+        title: Text(widget.section.title),
+        actions: [
+          IconButton(
+            icon: Icon(_isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+            onPressed: () async {
+              await BookmarkDB.toggle(widget.section.id);
+              setState(() => _isBookmarked = !_isBookmarked);
+            },
+          ),
+        ],
+      ),
       body: Markdown(
-        data: section.content,
+        data: widget.section.content,
         padding: const EdgeInsets.all(16),
         styleSheet: MarkdownStyleSheet(
           h1: const TextStyle(fontFamily: 'Vazir', fontSize: 20, fontWeight: FontWeight.bold),
@@ -59,7 +111,7 @@ class SectionPage extends StatelessWidget {
           blockquoteDecoration: BoxDecoration(
             color: AppTheme.primaryLight,
             borderRadius: BorderRadius.circular(8),
-            border: Border(right: BorderSide(color: color, width: 4)),
+            border: Border(right: BorderSide(color: widget.color, width: 4)),
           ),
           code: const TextStyle(fontFamily: 'monospace', fontSize: 12),
         ),
