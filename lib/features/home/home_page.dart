@@ -5,6 +5,9 @@ import '../chapters/chapter_page.dart';
 import '../search/search_page.dart';
 import '../bookmarks/bookmarks_page.dart';
 import '../diagnostic/diagnostic_page.dart';
+import '../tools/tools_page.dart';
+import '../remap/remap_page.dart';
+import '../motorcycle/motorcycle_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -70,6 +73,11 @@ class _HomePageState extends State<HomePage> {
             label: 'عیب‌یاب',
           ),
           NavigationDestination(
+            icon: Icon(Icons.calculate_outlined),
+            selectedIcon: Icon(Icons.calculate),
+            label: 'ابزارها',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.bookmark_outline),
             selectedIcon: Icon(Icons.bookmark),
             label: 'بوک‌مارک',
@@ -83,6 +91,7 @@ class _HomePageState extends State<HomePage> {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(child: _buildHeader()),
+                SliverToBoxAdapter(child: _buildSpecialCards()),
         SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: SliverGrid(
@@ -99,6 +108,61 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSpecialCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const RemapPage())),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF880E4F), Color(0xFFAD1457)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.memory, color: Colors.white, size: 28),
+                    SizedBox(height: 6),
+                    Text('ریمپ ECU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: InkWell(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const MotorcyclePage())),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFE65100), Color(0xFFF4511E)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.two_wheeler, color: Colors.white, size: 28),
+                    SizedBox(height: 6),
+                    Text('موتورسیکلت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
