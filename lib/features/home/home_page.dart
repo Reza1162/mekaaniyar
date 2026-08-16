@@ -55,6 +55,8 @@ class _HomePageState extends State<HomePage> {
               index: _tab,
               children: [
                 _buildChapters(),
+                const DiagnosticPage(),
+                const ToolsPage(),
                 const BookmarksPage(),
               ],
             ),
