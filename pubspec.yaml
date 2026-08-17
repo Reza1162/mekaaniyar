@@ -16,8 +16,7 @@ dependencies:
   path: ^1.9.0
   shared_preferences: ^2.3.2
   flutter_markdown: ^0.7.3
-  flutter_bluetooth_serial: ^0.4.0
-  permission_handler: ^11.3.1
+  bluetooth_classic: ^0.0.4
   fl_chart: ^0.68.0
   flutter_local_notifications: ^17.2.2
   share_plus: ^10.0.2

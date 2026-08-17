@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:bluetooth_classic/models/device.dart';
 import '../../data/obd2/obd2_service.dart';
 import 'obd2_dashboard_page.dart';
 
@@ -13,9 +12,8 @@ class Obd2ConnectPage extends StatefulWidget {
 
 class _Obd2ConnectPageState extends State<Obd2ConnectPage> {
   final _service = Obd2Service();
-  List<BluetoothDevice> _devices = [];
+  List<Device> _devices = [];
   bool _loading = true;
-  bool _bluetoothOn = true;
   String? _connectingAddress;
   String? _error;
 
@@ -31,31 +29,21 @@ class _Obd2ConnectPageState extends State<Obd2ConnectPage> {
       _error = null;
     });
     try {
-      await [
-        Permission.bluetoothConnect,
-        Permission.bluetoothScan,
-        Permission.location,
-      ].request();
-      final isOn = await FlutterBluetoothSerial.instance.isEnabled ?? false;
-      if (!isOn) {
-        await FlutterBluetoothSerial.instance.requestEnable();
-      }
+      await _service.initPermissions();
       final devices = await _service.getPairedDevices();
       setState(() {
         _devices = devices;
-        _bluetoothOn = true;
         _loading = false;
       });
     } catch (e) {
       setState(() {
-        _bluetoothOn = false;
         _loading = false;
-        _error = 'دسترسی به بلوتوث ممکن نشد. مطمئن شوید بلوتوث گوشی روشن است.';
+        _error = 'دسترسی به بلوتوث ممکن نشد. مطمئن شوید بلوتوث گوشی روشن است و دسترسی داده‌اید.';
       });
     }
   }
 
-  Future<void> _connect(BluetoothDevice device) async {
+  Future<void> _connect(Device device) async {
     setState(() => _connectingAddress = device.address);
     final ok = await _service.connect(device);
     if (!mounted) return;
@@ -73,7 +61,6 @@ class _Obd2ConnectPageState extends State<Obd2ConnectPage> {
 
   @override
   void dispose() {
-    // Only dispose if we never navigated forward with an active connection.
     if (_service.status != Obd2Status.ready) {
       _service.dispose();
     }
@@ -136,7 +123,7 @@ class _Obd2ConnectPageState extends State<Obd2ConnectPage> {
                             return ListTile(
                               leading: const Icon(Icons.bluetooth),
                               title: Text(d.name ?? 'دستگاه ناشناس'),
-                              subtitle: Text(d.address),
+                              subtitle: Text(d.address ?? ''),
                               trailing: connecting
                                   ? const SizedBox(
                                       width: 20,

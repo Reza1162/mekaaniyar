@@ -1,21 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'dart:typed_data';
+import 'package:bluetooth_classic/bluetooth_classic.dart';
+import 'package:bluetooth_classic/models/device.dart';
 import 'obd2_pids.dart';
 import 'dtc_decoder.dart';
 
 enum Obd2Status { disconnected, connecting, initializing, ready, error }
 
+/// Standard Serial Port Profile UUID used by virtually every ELM327
+/// Bluetooth Classic OBD2 dongle.
+const _sppUuid = '00001101-0000-1000-8000-00805f9b34fb';
+
 /// Talks to a classic-Bluetooth ELM327 OBD2 dongle using standard AT
-/// commands and Mode 01 (live data) / Mode 03 (stored codes) / Mode 04
-/// (clear codes) requests, per the SAE J1979 standard used by all
-/// consumer OBD2 scan tools.
+/// commands and Mode 01 (live data) / Mode 02 (freeze frame) /
+/// Mode 03 (stored codes) / Mode 04 (clear codes) requests, per the
+/// SAE J1979 standard used by all consumer OBD2 scan tools.
 class Obd2Service {
-  BluetoothConnection? _connection;
-  final StreamController<Obd2Status> _statusController =
-      StreamController.broadcast();
+  final _plugin = BluetoothClassic();
+  StreamSubscription? _dataSub;
+  final StreamController<Obd2Status> _statusController = StreamController.broadcast();
   Obd2Status _status = Obd2Status.disconnected;
   String _buffer = '';
+  bool _connected = false;
 
   Stream<Obd2Status> get statusStream => _statusController.stream;
   Obd2Status get status => _status;
@@ -25,17 +32,16 @@ class Obd2Service {
     _statusController.add(s);
   }
 
-  Future<List<BluetoothDevice>> getPairedDevices() async {
-    return FlutterBluetoothSerial.instance.getBondedDevices();
-  }
+  Future<void> initPermissions() => _plugin.initPermissions();
 
-  Future<bool> connect(BluetoothDevice device) async {
+  Future<List<Device>> getPairedDevices() => _plugin.getPairedDevices();
+
+  Future<bool> connect(Device device) async {
     _setStatus(Obd2Status.connecting);
     try {
-      _connection = await BluetoothConnection.toAddress(device.address);
-      _connection!.input!.listen(_onData).onDone(() {
-        _setStatus(Obd2Status.disconnected);
-      });
+      await _plugin.connect(device.address, _sppUuid);
+      _connected = true;
+      _dataSub = _plugin.onDeviceDataReceived().listen(_onData);
       _setStatus(Obd2Status.initializing);
       final ok = await _initElm327();
       _setStatus(ok ? Obd2Status.ready : Obd2Status.error);
@@ -47,15 +53,18 @@ class Obd2Service {
   }
 
   Future<void> disconnect() async {
-    await _connection?.close();
-    _connection = null;
+    await _dataSub?.cancel();
+    if (_connected) {
+      await _plugin.disconnect();
+      _connected = false;
+    }
     _setStatus(Obd2Status.disconnected);
   }
 
   final Map<String, Completer<String>> _pending = {};
   String? _currentKey;
 
-  void _onData(List<int> data) {
+  void _onData(Uint8List data) {
     _buffer += utf8.decode(data, allowMalformed: true);
     if (_buffer.contains('>')) {
       final response = _buffer;
@@ -68,15 +77,14 @@ class Obd2Service {
 
   /// Sends a raw AT/OBD command and waits for the '>' prompt terminator.
   Future<String> _sendRaw(String cmd, {Duration timeout = const Duration(seconds: 4)}) async {
-    if (_connection == null || !_connection!.isConnected) {
+    if (!_connected) {
       throw Exception('اتصال برقرار نیست');
     }
     final key = DateTime.now().microsecondsSinceEpoch.toString();
     _currentKey = key;
     final completer = Completer<String>();
     _pending[key] = completer;
-    _connection!.output.add(utf8.encode('$cmd\r'));
-    await _connection!.output.allSent;
+    await _plugin.write('$cmd\r');
     try {
       return await completer.future.timeout(timeout);
     } on TimeoutException {
@@ -99,45 +107,37 @@ class Obd2Service {
     }
   }
 
-  /// Sends a Mode 01 PID request and returns decoded bytes after the
-  /// two-byte echo header (mode+pid), or null if the vehicle didn't answer.
-  Future<List<int>?> _queryModeBytes(String modeHex, String pidHex) async {
-    final raw = await _sendRaw('$modeHex$pidHex');
-    final hex = raw
-        .replaceAll('\r', ' ')
-        .replaceAll('\n', ' ')
-        .replaceAll('>', '')
-        .trim();
-    if (hex.isEmpty || hex.toUpperCase().contains('NO DATA') || hex.toUpperCase().contains('ERROR')) {
-      return null;
-    }
+  List<int> _parseHexBytes(String raw) {
+    final hex = raw.replaceAll('\r', ' ').replaceAll('\n', ' ').replaceAll('>', '').trim();
     final tokens = hex.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
     final bytes = <int>[];
     for (final t in tokens) {
       final v = int.tryParse(t, radix: 16);
       if (v != null) bytes.add(v);
     }
-    // Expected reply mode is request mode + 0x40 (e.g. 01 -> 41).
+    return bytes;
+  }
+
+  /// Sends a Mode 01 PID request and returns decoded bytes after the
+  /// two-byte echo header (mode+pid), or null if the vehicle didn't answer.
+  Future<List<int>?> _queryModeBytes(String modeHex, String pidHex) async {
+    final raw = await _sendRaw('$modeHex$pidHex');
+    if (raw.isEmpty ||
+        raw.toUpperCase().contains('NO DATA') ||
+        raw.toUpperCase().contains('ERROR')) {
+      return null;
+    }
+    final bytes = _parseHexBytes(raw);
     final expectedMode = int.parse(modeHex, radix: 16) + 0x40;
     final idx = bytes.indexWhere((b) => b == expectedMode);
     if (idx == -1 || idx + 1 >= bytes.length) return null;
     return bytes.sublist(idx + 2); // skip mode + pid echo bytes
   }
 
-  /// Reads a Mode 01 PID request and returns decoded bytes.
-  /// Reads a Mode 02 (freeze frame) PID request for freeze frame 0 -
-  /// the vehicle's snapshot of key values at the moment a fault code
-  /// was stored. Uses the same PID decoders as live Mode 01 data.
   Future<double?> readFreezeFramePid(ObdPid pid) async {
     final raw = await _sendRaw('02${pid.code}00');
-    final hex = raw.replaceAll('\r', ' ').replaceAll('\n', ' ').replaceAll('>', '').trim();
-    if (hex.isEmpty || hex.toUpperCase().contains('NO DATA')) return null;
-    final tokens = hex.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
-    final bytes = <int>[];
-    for (final t in tokens) {
-      final v = int.tryParse(t, radix: 16);
-      if (v != null) bytes.add(v);
-    }
+    if (raw.isEmpty || raw.toUpperCase().contains('NO DATA')) return null;
+    final bytes = _parseHexBytes(raw);
     final idx = bytes.indexWhere((b) => b == 0x42);
     if (idx == -1 || idx + 2 >= bytes.length) return null;
     final dataBytes = bytes.sublist(idx + 3); // skip mode+pid+frame# echo
@@ -148,8 +148,6 @@ class Obd2Service {
     }
   }
 
-  /// Reads a small set of key freeze-frame values captured at the moment
-  /// the first stored DTC occurred.
   Future<Map<String, double?>> readFreezeFrame() async {
     final pids = [Obd2Pids.rpm, Obd2Pids.speed, Obd2Pids.coolantTemp, Obd2Pids.engineLoad];
     final result = <String, double?>{};
@@ -182,15 +180,8 @@ class Obd2Service {
   /// Reads stored trouble codes (Mode 03).
   Future<List<String>> readDtcs() async {
     final raw = await _sendRaw('03');
-    final hex = raw.replaceAll('\r', ' ').replaceAll('\n', ' ').replaceAll('>', '').trim();
-    if (hex.toUpperCase().contains('NO DATA')) return [];
-    final tokens = hex.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
-    final bytes = <int>[];
-    for (final t in tokens) {
-      final v = int.tryParse(t, radix: 16);
-      if (v != null) bytes.add(v);
-    }
-    // Drop the leading mode-echo byte (0x43) and the count byte if present.
+    if (raw.toUpperCase().contains('NO DATA')) return [];
+    final bytes = _parseHexBytes(raw);
     final startIdx = bytes.indexWhere((b) => b == 0x43);
     final dataBytes = startIdx == -1 ? bytes : bytes.sublist(startIdx + 1);
     return DtcDecoder.parseResponse(dataBytes);
@@ -204,7 +195,10 @@ class Obd2Service {
   }
 
   void dispose() {
+    _dataSub?.cancel();
     _statusController.close();
-    _connection?.close();
+    if (_connected) {
+      _plugin.disconnect();
+    }
   }
 }
