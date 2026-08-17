@@ -30,7 +30,7 @@ class _FreezeFramePageState extends State<FreezeFramePage> {
     });
   }
 
-  static const _framePids = [
+  static final _framePids = [
     Obd2Pids.rpm,
     Obd2Pids.speed,
     Obd2Pids.coolantTemp,

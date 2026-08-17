@@ -71,7 +71,7 @@ class _Obd2DashboardPageState extends State<Obd2DashboardPage> {
     final file = File('${dir.path}/mekaaniyar_obd2_log_${DateTime.now().millisecondsSinceEpoch}.csv');
     await file.writeAsString(csv);
     if (!mounted) return;
-    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)], text: 'گزارش OBD2 مکانیار'));
+    await Share.shareXFiles([XFile(file.path)], text: 'گزارش OBD2 مکانیار');
   }
 
   String _csvEscape(String v) => v.contains(',') ? '"$v"' : v;
