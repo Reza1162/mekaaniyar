@@ -124,6 +124,41 @@ class Obd2Service {
     return bytes.sublist(idx + 2); // skip mode + pid echo bytes
   }
 
+  /// Reads a Mode 01 PID request and returns decoded bytes.
+  /// Reads a Mode 02 (freeze frame) PID request for freeze frame 0 -
+  /// the vehicle's snapshot of key values at the moment a fault code
+  /// was stored. Uses the same PID decoders as live Mode 01 data.
+  Future<double?> readFreezeFramePid(ObdPid pid) async {
+    final raw = await _sendRaw('02${pid.code}00');
+    final hex = raw.replaceAll('\r', ' ').replaceAll('\n', ' ').replaceAll('>', '').trim();
+    if (hex.isEmpty || hex.toUpperCase().contains('NO DATA')) return null;
+    final tokens = hex.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+    final bytes = <int>[];
+    for (final t in tokens) {
+      final v = int.tryParse(t, radix: 16);
+      if (v != null) bytes.add(v);
+    }
+    final idx = bytes.indexWhere((b) => b == 0x42);
+    if (idx == -1 || idx + 2 >= bytes.length) return null;
+    final dataBytes = bytes.sublist(idx + 3); // skip mode+pid+frame# echo
+    try {
+      return pid.decode(dataBytes);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Reads a small set of key freeze-frame values captured at the moment
+  /// the first stored DTC occurred.
+  Future<Map<String, double?>> readFreezeFrame() async {
+    final pids = [Obd2Pids.rpm, Obd2Pids.speed, Obd2Pids.coolantTemp, Obd2Pids.engineLoad];
+    final result = <String, double?>{};
+    for (final p in pids) {
+      result[p.code] = await readFreezeFramePid(p);
+    }
+    return result;
+  }
+
   Future<double?> readPid(ObdPid pid) async {
     final bytes = await _queryModeBytes('01', pid.code);
     if (bytes == null || bytes.isEmpty) return null;

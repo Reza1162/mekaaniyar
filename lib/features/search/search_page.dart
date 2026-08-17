@@ -28,9 +28,9 @@ class _SearchPageState extends State<SearchPage> {
     final query = q.toLowerCase();
     setState(() {
       _results = _index.where((item) =>
-        item['sectionTitle']!.contains(query) ||
+        item['sectionTitle']!.toLowerCase().contains(query) ||
         item['content']!.toLowerCase().contains(query) ||
-        item['chapterTitle']!.contains(query)
+        item['chapterTitle']!.toLowerCase().contains(query)
       ).toList();
     });
   }

@@ -10,6 +10,8 @@ import '../remap/remap_page.dart';
 import '../motorcycle/motorcycle_page.dart';
 import '../legal/legal_page.dart';
 import '../obd2/obd2_connect_page.dart';
+import '../garage/garage_page.dart';
+import '../../data/garage/notification_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,6 +29,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _load();
+    NotificationService.requestPermission();
+    NotificationService.scheduleWeeklyCheckIn();
   }
 
   Future<void> _load() async {
@@ -74,6 +78,7 @@ class _HomePageState extends State<HomePage> {
               children: [
                 _buildChapters(),
                 const DiagnosticPage(),
+                const GaragePage(),
                 const ToolsPage(),
                 const BookmarksPage(),
               ],
@@ -91,6 +96,11 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.search_outlined),
             selectedIcon: Icon(Icons.search),
             label: 'عیب‌یاب',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.garage_outlined),
+            selectedIcon: Icon(Icons.garage),
+            label: 'گاراژ',
           ),
           NavigationDestination(
             icon: Icon(Icons.calculate_outlined),
@@ -263,10 +273,23 @@ class _ChapterCard extends StatelessWidget {
   final Chapter chapter;
   const _ChapterCard({required this.chapter});
 
+  static const Map<String, IconData> _iconMap = {
+    'engine': Icons.settings_suggest,
+    'gearbox': Icons.sync_alt,
+    'electrical': Icons.electric_bolt,
+    'transmission': Icons.settings_input_component,
+    'suspension': Icons.height,
+    'brakes': Icons.album,
+    'ev': Icons.electric_car,
+    'iran': Icons.directions_car,
+    'table': Icons.table_chart,
+  };
+
   @override
   Widget build(BuildContext context) {
     final color = Color(
         int.parse(chapter.color.replaceFirst('#', 'FF'), radix: 16));
+    final icon = _iconMap[chapter.icon] ?? Icons.menu_book_outlined;
     return InkWell(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ChapterPage(chapter: chapter)),
@@ -289,7 +312,7 @@ class _ChapterCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child:
-                  Icon(Icons.menu_book_outlined, color: color, size: 24),
+                  Icon(icon, color: color, size: 24),
             ),
             const Spacer(),
             Text(chapter.title,

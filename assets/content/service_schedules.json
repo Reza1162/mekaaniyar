@@ -1,0 +1,62 @@
+{
+  "models": [
+    {
+      "key": "pride_saipa",
+      "title": "پراید / تیبا (خانواده سایپا)",
+      "items": [
+        {"title": "تعویض روغن موتور و فیلتر", "intervalKm": 5000, "intervalMonths": 6},
+        {"title": "تعویض فیلتر هوا", "intervalKm": 15000, "intervalMonths": 12},
+        {"title": "تعویض فیلتر بنزین", "intervalKm": 20000, "intervalMonths": 12},
+        {"title": "تعویض شمع", "intervalKm": 20000, "intervalMonths": 24},
+        {"title": "تعویض تسمه تایم", "intervalKm": 60000, "intervalMonths": 48},
+        {"title": "تعویض روغن ترمز", "intervalKm": 30000, "intervalMonths": 24},
+        {"title": "بازدید لنت ترمز", "intervalKm": 10000, "intervalMonths": 6}
+      ]
+    },
+    {
+      "key": "peugeot_206_207",
+      "title": "پژو ۲۰۶ / ۲۰۷",
+      "items": [
+        {"title": "تعویض روغن موتور و فیلتر", "intervalKm": 7000, "intervalMonths": 6},
+        {"title": "تعویض فیلتر هوا", "intervalKm": 20000, "intervalMonths": 12},
+        {"title": "تعویض فیلتر کابین", "intervalKm": 15000, "intervalMonths": 12},
+        {"title": "تعویض شمع", "intervalKm": 30000, "intervalMonths": 24},
+        {"title": "تعویض تسمه تایم", "intervalKm": 90000, "intervalMonths": 60},
+        {"title": "تعویض روغن گیربکس", "intervalKm": 60000, "intervalMonths": 48},
+        {"title": "بازدید لنت و دیسک ترمز", "intervalKm": 10000, "intervalMonths": 6}
+      ]
+    },
+    {
+      "key": "samand_soren",
+      "title": "سمند / سورن (XU7)",
+      "items": [
+        {"title": "تعویض روغن موتور و فیلتر", "intervalKm": 7000, "intervalMonths": 6},
+        {"title": "تعویض فیلتر هوا", "intervalKm": 20000, "intervalMonths": 12},
+        {"title": "تعویض شمع", "intervalKm": 30000, "intervalMonths": 24},
+        {"title": "تعویض تسمه تایم", "intervalKm": 90000, "intervalMonths": 60},
+        {"title": "تعویض ضدیخ", "intervalKm": 60000, "intervalMonths": 24},
+        {"title": "بازدید لنت ترمز", "intervalKm": 10000, "intervalMonths": 6}
+      ]
+    },
+    {
+      "key": "dena_runna",
+      "title": "دنا / رانا (EF7)",
+      "items": [
+        {"title": "تعویض روغن موتور و فیلتر", "intervalKm": 7000, "intervalMonths": 6},
+        {"title": "تعویض فیلتر هوا", "intervalKm": 20000, "intervalMonths": 12},
+        {"title": "تعویض فیلتر کابین", "intervalKm": 15000, "intervalMonths": 12},
+        {"title": "تعویض شمع", "intervalKm": 30000, "intervalMonths": 24},
+        {"title": "تعویض روغن گیربکس اتوماتیک/دستی", "intervalKm": 60000, "intervalMonths": 48},
+        {"title": "بازدید لنت و دیسک ترمز", "intervalKm": 10000, "intervalMonths": 6}
+      ]
+    },
+    {
+      "key": "custom",
+      "title": "خودروی دیگر / سفارشی",
+      "items": [
+        {"title": "تعویض روغن موتور و فیلتر", "intervalKm": 7000, "intervalMonths": 6},
+        {"title": "بازدید لنت ترمز", "intervalKm": 10000, "intervalMonths": 6}
+      ]
+    }
+  ]
+}

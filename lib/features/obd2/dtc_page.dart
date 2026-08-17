@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/obd2/obd2_service.dart';
 import '../../data/obd2/dtc_decoder.dart';
+import 'freeze_frame_page.dart';
 
 class DtcPage extends StatefulWidget {
   final Obd2Service service;
@@ -91,6 +92,12 @@ class _DtcPageState extends State<DtcPage> {
                       leading: const Icon(Icons.warning_amber, color: Colors.orange),
                       title: Text(code, style: const TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(DtcDecoder.describe(code)),
+                      trailing: const Icon(Icons.chevron_left),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => FreezeFramePage(service: widget.service, code: code),
+                        ),
+                      ),
                     );
                   },
                 ),

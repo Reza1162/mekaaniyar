@@ -38,7 +38,8 @@ jobs:
                   '\n    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />'
                   '\n    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />'
                   '\n    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />'
-                  '\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />\n'
+                  '\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />'
+                  '\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
               )
               idx = c.find('>', c.find('<manifest'))
               c = c[:idx+1] + perms + c[idx+1:]
