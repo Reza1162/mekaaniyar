@@ -24,7 +24,7 @@ class _State extends State<BatteryCalculator> {
     if (v >= 12.7) { status = 'شارژ کامل ✅'; charge = 100; color = AppTheme.primary; }
     else if (v >= 12.5) { status = 'شارژ خوب'; charge = 90; color = AppTheme.primary; }
     else if (v >= 12.4) { status = 'شارژ متوسط'; charge = 75; color = Colors.green; }
-    else if (v >= 12.2) { status = 'شارژ کم'; charge = 50; color = AppTheme.warning; }
+    else if (v >= 12.2) { status = 'شارژ کم'; charge = 50; color = Colors.orange; }
     else if (v >= 12.0) { status = 'شارژ خیلی کم ⚠️'; charge = 25; color = Colors.orange; }
     else if (v >= 11.8) { status = 'تقریباً خالی 🔴'; charge = 10; color = Colors.red; }
     else { status = 'خالی — تعویض لازم 🔴'; charge = 0; color = Colors.red; }
