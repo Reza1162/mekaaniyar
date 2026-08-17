@@ -23,6 +23,28 @@ jobs:
 
       - run: flutter pub get
 
+      - name: پچ compileSdk پکیج‌های وابسته
+        run: |
+          python3 - << 'PYEOF'
+          import glob, re, os
+          cache = os.path.expanduser("~/.pub-cache/hosted/pub.dev")
+          patched = []
+          for gradle_file in glob.glob(f"{cache}/*/android/build.gradle") + glob.glob(f"{cache}/*/android/build.gradle.kts"):
+              with open(gradle_file) as f:
+                  c = f.read()
+              orig = c
+              is_kts = gradle_file.endswith(".kts")
+              def bump(m):
+                  return ('compileSdk = 36' if is_kts else 'compileSdk 36')
+              c = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 36', c)
+              c = re.sub(r'compileSdk\s*=?\s*\d+', bump, c)
+              if c != orig:
+                  with open(gradle_file, "w") as f:
+                      f.write(c)
+                  patched.append(gradle_file)
+          print("patched:", patched)
+          PYEOF
+
       - run: flutter create --platforms=android .
 
       - name: پچ مجوزهای بلوتوث (OBD2)
