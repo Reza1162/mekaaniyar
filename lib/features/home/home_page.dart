@@ -8,6 +8,8 @@ import '../diagnostic/diagnostic_page.dart';
 import '../tools/tools_page.dart';
 import '../remap/remap_page.dart';
 import '../motorcycle/motorcycle_page.dart';
+import '../legal/legal_page.dart';
+import '../obd2/obd2_connect_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -46,6 +48,22 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SearchPage()),
             ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (v) {
+              if (v == 'legal') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LegalPage()),
+                );
+              }
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(
+                value: 'legal',
+                child: Text('شرایط استفاده و حریم خصوصی'),
+              ),
+            ],
           ),
         ],
       ),
@@ -116,50 +134,87 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSpecialCards() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: InkWell(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const RemapPage())),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF880E4F), Color(0xFFAD1457)]),
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const RemapPage())),
                   borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Column(
-                  children: [
-                    Icon(Icons.memory, color: Colors.white, size: 28),
-                    SizedBox(height: 6),
-                    Text('ریمپ ECU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF880E4F), Color(0xFFAD1457)]),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.memory, color: Colors.white, size: 28),
+                        SizedBox(height: 6),
+                        Text('ریمپ ECU', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: InkWell(
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MotorcyclePage())),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE65100), Color(0xFFF4511E)]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: InkWell(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const MotorcyclePage())),
                   borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE65100), Color(0xFFF4511E)]),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Column(
+                      children: [
+                        Icon(Icons.two_wheeler, color: Colors.white, size: 28),
+                        SizedBox(height: 6),
+                        Text('موتورسیکلت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
                 ),
-                child: const Column(
-                  children: [
-                    Icon(Icons.two_wheeler, color: Colors.white, size: 28),
-                    SizedBox(height: 6),
-                    Text('موتورسیکلت', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const Obd2ConnectPage())),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)]),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.bluetooth_connected, color: Colors.white, size: 28),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('اتصال OBD2',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        Text('اتصال زنده به کامپیوتر خودرو',
+                            style: TextStyle(color: Colors.white70, fontSize: 11)),
+                      ],
+                    ),
+                  ),
+                  Icon(Icons.chevron_left, color: Colors.white70),
+                ],
               ),
             ),
           ),

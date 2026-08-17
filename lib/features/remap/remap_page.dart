@@ -42,15 +42,25 @@ class _RemapPageState extends State<RemapPage> {
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: const Color(0xFF880E4F)),
                   ),
-                  child: const Row(
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.warning_amber, color: Color(0xFF880E4F)),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          '⚠️ ریمپ ECU ریسک دارد. همیشه backup بگیرید و با احتیاط عمل کنید.',
-                          style: TextStyle(color: Color(0xFF880E4F)),
-                        ),
+                      Row(
+                        children: [
+                          Icon(Icons.warning_amber, color: Color(0xFF880E4F)),
+                          SizedBox(width: 10),
+                          Text('هشدار مهم',
+                              style: TextStyle(
+                                  color: Color(0xFF880E4F),
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'این بخش فقط جنبه‌ی آموزشی دارد. ریمپ ECU ممکن است گارانتی خودرو را باطل کند و '
+                        'با قوانین معاینه فنی/آلایندگی در تضاد باشد. همیشه backup بگیرید و مسئولیت اجرای '
+                        'واقعی روی خودرو با شماست.',
+                        style: TextStyle(color: Color(0xFF880E4F)),
                       ),
                     ],
                   ),
