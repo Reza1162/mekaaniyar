@@ -11,6 +11,7 @@ import '../motorcycle/motorcycle_page.dart';
 import '../legal/legal_page.dart';
 import '../obd2/obd2_connect_page.dart';
 import '../garage/garage_page.dart';
+import '../quiz/quiz_hub_page.dart';
 import '../../data/garage/notification_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -47,6 +48,13 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('مکانیار'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.quiz_outlined),
+            tooltip: 'کویز دانش',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const QuizHubPage()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () => Navigator.of(context).push(

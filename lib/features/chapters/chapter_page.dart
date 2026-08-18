@@ -4,7 +4,9 @@ import '../../core/theme/app_theme.dart';
 import '../../data/content_repository.dart';
 import '../../data/bookmark_db.dart';
 import '../../data/pro_manager.dart';
+import '../../data/quiz_repository.dart';
 import '../pro/pro_page.dart';
+import '../quiz/quiz_session_page.dart';
 
 class ChapterPage extends StatelessWidget {
   final Chapter chapter;
@@ -15,6 +17,23 @@ class ChapterPage extends StatelessWidget {
     final color = Color(int.parse(chapter.color.replaceFirst('#', 'FF'), radix: 16));
     return Scaffold(
       appBar: AppBar(title: Text(chapter.title)),
+      floatingActionButton: FutureBuilder<ChapterQuiz?>(
+        future: QuizRepository.forChapter(chapter.id),
+        builder: (context, snap) {
+          if (snap.data == null) return const SizedBox.shrink();
+          final quiz = snap.data!;
+          return FloatingActionButton.extended(
+            backgroundColor: color,
+            icon: const Icon(Icons.quiz_outlined),
+            label: const Text('کویز این فصل'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => QuizSessionPage(quiz: quiz, chapterTitle: chapter.title, color: color),
+              ),
+            ),
+          );
+        },
+      ),
       body: FutureBuilder<bool>(
         future: ProManager.isPro(),
         builder: (context, snap) {
