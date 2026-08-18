@@ -47,6 +47,51 @@ jobs:
 
       - run: flutter create --platforms=android .
 
+      - name: پچ JitPack repo (لازمه‌ی Poolakey/بازار)
+        run: |
+          python3 << 'PYEOF'
+          import re, os
+
+          def add_jitpack(path, is_kts):
+              if not os.path.exists(path):
+                  return False
+              with open(path) as f:
+                  c = f.read()
+              if 'jitpack.io' in c:
+                  return False
+              jit = "maven { url = uri(\"https://jitpack.io\") }" if is_kts else "maven { url 'https://jitpack.io' }"
+              # Try dependencyResolutionManagement.repositories (new Flutter/AGP template)
+              m = re.search(r'(dependencyResolutionManagement\s*\{[^}]*repositories\s*\{)', c, re.S)
+              if m:
+                  idx = m.end()
+                  c = c[:idx] + f"\n        {jit}" + c[idx:]
+                  with open(path, 'w') as f:
+                      f.write(c)
+                  return True
+              # Fallback: old-style allprojects.repositories in top-level build.gradle
+              m = re.search(r'(allprojects\s*\{[^}]*repositories\s*\{)', c, re.S)
+              if m:
+                  idx = m.end()
+                  c = c[:idx] + f"\n        {jit}" + c[idx:]
+                  with open(path, 'w') as f:
+                      f.write(c)
+                  return True
+              return False
+
+          patched = False
+          for path, is_kts in [
+              ("android/settings.gradle.kts", True),
+              ("android/settings.gradle", False),
+              ("android/build.gradle.kts", True),
+              ("android/build.gradle", False),
+          ]:
+              if add_jitpack(path, is_kts):
+                  print("JitPack added to", path)
+                  patched = True
+          if not patched:
+              print("WARNING: could not find a repositories block to patch")
+          PYEOF
+
       - name: پچ مجوزهای بلوتوث (OBD2)
         run: |
           python3 - "android/app/src/main/AndroidManifest.xml" << 'PYEOF'

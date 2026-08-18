@@ -1,9 +1,55 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/pro_manager.dart';
+import '../../data/iap_service.dart';
 
-class ProPage extends StatelessWidget {
+class ProPage extends StatefulWidget {
   const ProPage({super.key});
+
+  @override
+  State<ProPage> createState() => _ProPageState();
+}
+
+class _ProPageState extends State<ProPage> {
+  bool _purchasing = false;
+  bool _storeChecked = false;
+  IapStore _store = IapStore.none;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStore();
+  }
+
+  Future<void> _checkStore() async {
+    final store = await IapService.detectStore();
+    if (!mounted) return;
+    setState(() {
+      _store = store;
+      _storeChecked = true;
+    });
+  }
+
+  Future<void> _purchase() async {
+    setState(() => _purchasing = true);
+    final ok = await IapService.purchasePro();
+    if (!mounted) return;
+    setState(() => _purchasing = false);
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('نسخه حرفه‌ای فعال شد')),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_store == IapStore.none
+              ? 'برای خرید باید از طریق اپلیکیشن بازار یا مایکت وارد شده باشید'
+              : 'خرید ناموفق بود یا لغو شد'),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,20 +118,22 @@ class ProPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      // اینجا درگاه پرداخت وصل می‌شود
-                      // فعلاً برای تست:
-                      await ProManager.activate();
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('نسخه حرفه‌ای فعال شد')),
-                      );
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('خرید و فعال‌سازی'),
+                    onPressed: _purchasing ? null : _purchase,
+                    child: _purchasing
+                        ? const SizedBox(
+                            width: 20, height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('خرید و فعال‌سازی'),
                   ),
                 ),
+                if (_storeChecked && _store == IapStore.none) ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    'برای خرید، این اپ را از کافه‌بازار یا مایکت نصب کرده باشید',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 11.5, color: Colors.orange),
+                  ),
+                ],
               ],
             ),
           ),
