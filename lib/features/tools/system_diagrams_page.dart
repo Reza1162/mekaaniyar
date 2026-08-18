@@ -55,6 +55,42 @@ class SystemDiagramsPage extends StatelessWidget {
         FlowNode('اواپراتور', Icons.ac_unit, note: 'جذب گرمای کابین'),
       ],
     ),
+    SystemDiagram(
+      title: 'مسیر سوخت‌رسانی (انژکتوری)',
+      description: 'مسیر انتقال بنزین از باک تا سوپاپ ورودی سیلندر.',
+      color: Colors.orange.shade800,
+      nodes: [
+        FlowNode('باک سوخت', Icons.local_gas_station, note: 'ذخیره بنزین'),
+        FlowNode('پمپ بنزین', Icons.opacity, note: 'ایجاد فشار'),
+        FlowNode('فیلتر سوخت', Icons.filter_alt_outlined, note: 'حذف ناخالصی'),
+        FlowNode('ریل سوخت', Icons.linear_scale, note: 'توزیع به انژکتورها'),
+        FlowNode('انژکتور', Icons.water_drop, note: 'پاشش داخل سیلندر'),
+      ],
+    ),
+    SystemDiagram(
+      title: 'مدار روغن‌کاری موتور',
+      description: 'مسیر گردش روغن برای روان‌کاری و خنک‌کاری قطعات متحرک موتور.',
+      color: Colors.brown,
+      isLoop: true,
+      nodes: [
+        FlowNode('کارتر روغن', Icons.oil_barrel, note: 'مخزن ذخیره'),
+        FlowNode('پمپ روغن', Icons.settings_input_component, note: 'ایجاد فشار'),
+        FlowNode('فیلتر روغن', Icons.filter_alt_outlined, note: 'حذف ذرات'),
+        FlowNode('گالری روغن', Icons.linear_scale, note: 'توزیع در موتور'),
+        FlowNode('یاتاقان‌ها/سوپاپ', Icons.settings, note: 'روان‌کاری قطعات'),
+      ],
+    ),
+    SystemDiagram(
+      title: 'سیستم جرقه‌زنی (آتش‌زنی)',
+      description: 'مسیر تولید و انتقال جرقه از باتری تا شمع، در سیستم‌های مدرن کویل مستقیم.',
+      color: Colors.deepPurple,
+      nodes: [
+        FlowNode('باتری', Icons.battery_charging_full, note: 'منبع ولتاژ ۱۲ ولت'),
+        FlowNode('ECU', Icons.memory, note: 'تعیین زمان جرقه'),
+        FlowNode('کویل آتش‌زنی', Icons.bolt, note: 'تبدیل به ولتاژ بالا'),
+        FlowNode('شمع', Icons.flash_on, note: 'ایجاد جرقه در سیلندر'),
+      ],
+    ),
   ];
 
   @override
