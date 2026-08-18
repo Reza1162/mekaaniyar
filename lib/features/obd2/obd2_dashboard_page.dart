@@ -6,7 +6,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../data/obd2/obd2_service.dart';
 import '../../data/obd2/obd2_pids.dart';
+import '../../data/obd2/obd2_log_repository.dart';
+import '../../data/garage/garage_repository.dart';
 import 'dtc_page.dart';
+import 'obd2_history_page.dart';
 
 class Obd2DashboardPage extends StatefulWidget {
   final Obd2Service service;
@@ -51,6 +54,43 @@ class _Obd2DashboardPageState extends State<Obd2DashboardPage> {
     });
   }
 
+  bool _saving = false;
+
+  Future<void> _saveToHistory() async {
+    if (_values.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('هنوز داده‌ای برای ذخیره وجود ندارد')),
+      );
+      return;
+    }
+    setState(() => _saving = true);
+    final dtcs = await widget.service.readDtcs();
+    final vehicleId = await GarageRepository.getActiveVehicleId();
+    final session = Obd2Session(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      vehicleId: vehicleId,
+      timestamp: DateTime.now(),
+      lastReadings: Map.of(_values),
+      dtcCodes: dtcs,
+    );
+    await Obd2LogRepository.save(session);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(vehicleId == null
+            ? 'ذخیره شد (بدون خودروی فعال در گاراژ)'
+            : 'در تاریخچه‌ی OBD2 این خودرو ذخیره شد'),
+        action: SnackBarAction(
+          label: 'مشاهده تاریخچه',
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const Obd2HistoryPage()),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _exportCsv() async {
     if (_log.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -89,6 +129,21 @@ class _Obd2DashboardPageState extends State<Obd2DashboardPage> {
       appBar: AppBar(
         title: const Text('داشبورد زنده OBD2'),
         actions: [
+          IconButton(
+            icon: _saving
+                ? const SizedBox(
+                    width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.save_outlined),
+            tooltip: 'ذخیره در تاریخچه گاراژ',
+            onPressed: _saving ? null : _saveToHistory,
+          ),
+          IconButton(
+            icon: const Icon(Icons.history),
+            tooltip: 'تاریخچه',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const Obd2HistoryPage()),
+            ),
+          ),
           IconButton(
             icon: Icon(_polling ? Icons.pause : Icons.play_arrow),
             onPressed: () => setState(() => _polling = !_polling),

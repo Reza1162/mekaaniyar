@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../data/garage/garage_repository.dart';
 import '../../data/garage/service_log_repository.dart';
 import '../../data/garage/notification_service.dart';
+import '../obd2/obd2_history_page.dart';
+import '../report/mechanic_report_generator.dart';
 import 'vehicle_form_page.dart';
 
 class VehicleDetailPage extends StatefulWidget {
@@ -85,12 +88,37 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
     _load();
   }
 
+  bool _generatingReport = false;
+
+  Future<void> _shareReport() async {
+    setState(() => _generatingReport = true);
+    try {
+      final file = await MechanicReportGenerator.generate(_vehicle.id);
+      if (!mounted) return;
+      await Share.shareXFiles([XFile(file.path)], text: 'گزارش خودرو — ${_vehicle.nickname}');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ساخت گزارش با خطا مواجه شد')),
+      );
+    } finally {
+      if (mounted) setState(() => _generatingReport = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_vehicle.nickname),
         actions: [
+          IconButton(
+            icon: _generatingReport
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.picture_as_pdf_outlined),
+            tooltip: 'گزارش برای مکانیک (PDF)',
+            onPressed: _generatingReport ? null : _shareReport,
+          ),
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () async {
@@ -119,6 +147,17 @@ class _VehicleDetailPageState extends State<VehicleDetailPage> {
                       title: Text('${_vehicle.currentKm} کیلومتر'),
                       subtitle: const Text('کیلومتر فعلی'),
                       trailing: TextButton(onPressed: _updateKm, child: const Text('بروزرسانی')),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.bluetooth_connected, color: Colors.green),
+                      title: const Text('تاریخچه OBD2 این خودرو'),
+                      trailing: const Icon(Icons.chevron_left),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => Obd2HistoryPage(vehicleId: _vehicle.id)),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

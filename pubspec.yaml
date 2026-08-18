@@ -20,6 +20,8 @@ dependencies:
   fl_chart: ^0.68.0
   flutter_local_notifications: ^17.2.2
   share_plus: ^10.0.2
+  pdf: ^3.11.1
+  arabic_reshaper: ^0.0.3
 
 dev_dependencies:
   flutter_test:

@@ -12,6 +12,8 @@ import 'belt_pulley.dart';
 import 'battery_calculator.dart';
 import 'tyre_calculator.dart';
 import 'engine_displacement.dart';
+import '../vin/vin_decoder_page.dart';
+import 'obd2_connector_diagram.dart';
 
 class ToolsPage extends StatelessWidget {
   const ToolsPage({super.key});
@@ -31,6 +33,8 @@ class ToolsPage extends StatelessWidget {
       {'title': 'تست باتری', 'subtitle': 'وضعیت از روی ولتاژ', 'icon': Icons.battery_charging_full, 'color': Colors.green, 'page': const BatteryCalculator()},
       {'title': 'مقایسه سایز تایر', 'subtitle': 'اختلاف قطر و سرعت‌سنج', 'icon': Icons.tire_repair, 'color': Colors.grey, 'page': const TyreCalculator()},
       {'title': 'حجم موتور', 'subtitle': 'از Bore و Stroke', 'icon': Icons.engineering, 'color': Colors.deepOrange, 'page': const EngineDisplacementCalculator()},
+      {'title': 'رمزگشایی VIN', 'subtitle': 'سازنده و سال تولید از شماره شاسی', 'icon': Icons.pin_outlined, 'color': Colors.blueGrey, 'page': const VinDecoderPage()},
+      {'title': 'دیاگرام سوکت OBD2', 'subtitle': 'نمای پین‌های سوکت ۱۶پین', 'icon': Icons.settings_input_hdmi, 'color': Colors.indigo, 'page': const Obd2ConnectorDiagram()},
     ];
 
     return Scaffold(
