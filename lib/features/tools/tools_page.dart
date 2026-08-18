@@ -14,6 +14,7 @@ import 'tyre_calculator.dart';
 import 'engine_displacement.dart';
 import '../vin/vin_decoder_page.dart';
 import 'obd2_connector_diagram.dart';
+import 'system_diagrams_page.dart';
 
 class ToolsPage extends StatelessWidget {
   const ToolsPage({super.key});
@@ -35,6 +36,7 @@ class ToolsPage extends StatelessWidget {
       {'title': 'حجم موتور', 'subtitle': 'از Bore و Stroke', 'icon': Icons.engineering, 'color': Colors.deepOrange, 'page': const EngineDisplacementCalculator()},
       {'title': 'رمزگشایی VIN', 'subtitle': 'سازنده و سال تولید از شماره شاسی', 'icon': Icons.pin_outlined, 'color': Colors.blueGrey, 'page': const VinDecoderPage()},
       {'title': 'دیاگرام سوکت OBD2', 'subtitle': 'نمای پین‌های سوکت ۱۶پین', 'icon': Icons.settings_input_hdmi, 'color': Colors.indigo, 'page': const Obd2ConnectorDiagram()},
+      {'title': 'دیاگرام سیستم‌ها', 'subtitle': 'خنک‌کاری، ترمز، شارژ، کولر', 'icon': Icons.account_tree_outlined, 'color': Colors.teal, 'page': const SystemDiagramsPage()},
     ];
 
     return Scaffold(
