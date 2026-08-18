@@ -35,13 +35,15 @@ class Section {
   final String id;
   final String title;
   final String content;
+  final String level; // 'basic' or 'advanced'
 
-  Section({required this.id, required this.title, required this.content});
+  Section({required this.id, required this.title, required this.content, this.level = 'basic'});
 
   factory Section.fromJson(Map<String, dynamic> j) => Section(
         id: j['id'],
         title: j['title'],
         content: j['content'],
+        level: j['level'] ?? 'basic',
       );
 }
 
