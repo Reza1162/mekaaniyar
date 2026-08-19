@@ -23,7 +23,7 @@ jobs:
 
       - run: flutter pub get
 
-      - name: پچ compileSdk پکیج‌های وابسته
+      - name: پچ compileSdk و jcenter پکیج‌های وابسته
         run: |
           python3 - << 'PYEOF'
           import glob, re, os
@@ -38,6 +38,9 @@ jobs:
                   return ('compileSdk = 36' if is_kts else 'compileSdk 36')
               c = re.sub(r'compileSdkVersion\s+\d+', 'compileSdkVersion 36', c)
               c = re.sub(r'compileSdk\s*=?\s*\d+', bump, c)
+              # jcenter() was fully shut down; every package still calling it
+              # needs it swapped for mavenCentral() to resolve at all.
+              c = c.replace('jcenter()', 'mavenCentral()')
               if c != orig:
                   with open(gradle_file, "w") as f:
                       f.write(c)
