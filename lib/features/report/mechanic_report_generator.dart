@@ -33,7 +33,7 @@ class MechanicReportGenerator {
   }
 
   static String _shape(String text) {
-    return ArabicReshaper().reshape(text).split('').reversed.join('');
+    return ArabicReshaper.instance.reshape(text).split('').reversed.join('');
   }
 
   static Future<File> generate(String vehicleId) async {
