@@ -14,6 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -152,6 +157,26 @@ jobs:
               c = f.read()
           is_kts = path.endswith(".kts")
           c = re.sub(r'compileSdk\s*=?\s*\d+', ('compileSdk = 36' if is_kts else 'compileSdk 36'), c)
+          # myket_iap ships classes compiled with Java 21 bytecode; our
+          # own source/target compatibility must be at least that high
+          # or javac refuses to read those class files.
+          c = re.sub(r'JavaVersion\.VERSION_\d+(_\d+)?', 'JavaVersion.VERSION_21', c)
+          c = re.sub(r'jvmTarget\s*=\s*[\'"]\d+[\'"]', 'jvmTarget = "21"', c)
+          if "compileOptions {" not in c and "android {" in c:
+              co = (
+                  '\n    compileOptions {\n'
+                  '        sourceCompatibility = JavaVersion.VERSION_21\n'
+                  '        targetCompatibility = JavaVersion.VERSION_21\n'
+                  '    }\n'
+              ) if is_kts else (
+                  '\n    compileOptions {\n'
+                  '        sourceCompatibility JavaVersion.VERSION_21\n'
+                  '        targetCompatibility JavaVersion.VERSION_21\n'
+                  '    }\n'
+              )
+              idx = c.find("android {")
+              brace_idx = c.find("{", idx) + 1
+              c = c[:brace_idx] + co + c[brace_idx:]
           flag = "isCoreLibraryDesugaringEnabled = true" if is_kts else "coreLibraryDesugaringEnabled true"
           if flag not in c and "compileOptions {" in c:
               c = c.replace("compileOptions {", f"compileOptions {{\n        {flag}", 1)
