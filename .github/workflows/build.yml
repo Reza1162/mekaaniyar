@@ -138,6 +138,27 @@ jobs:
                   c = c.replace("dependencies {", f"dependencies {{\n    {dep}", 1)
               else:
                   c += f"\ndependencies {{\n    {dep}\n}}\n"
+          # Poolakey (Bazaar) and myket-billing-client both bundle an
+          # identical copy of the classic Google IAB AIDL stub, which
+          # collides as a duplicate class at package time. Excluding it
+          # from packaging is safe -- both copies are byte-identical and
+          # only one is ever loaded at runtime.
+          if "packaging {" not in c and "packagingOptions {" not in c:
+              exclude_block = (
+                  '\n    packaging {\n'
+                  '        resources {\n'
+                  '            excludes += "com/android/vending/billing/**"\n'
+                  '        }\n'
+                  '    }\n'
+              ) if is_kts else (
+                  '\n    packagingOptions {\n'
+                  '        exclude "com/android/vending/billing/**"\n'
+                  '    }\n'
+              )
+              idx = c.find("android {")
+              if idx != -1:
+                  brace_idx = c.find("{", idx) + 1
+                  c = c[:brace_idx] + exclude_block + c[brace_idx:]
           open(path, "w").write(c)
           print("patched OK")
           PYEOF
