@@ -9,6 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         store: [bazaar, myket]
     steps:
@@ -177,6 +178,24 @@ jobs:
               idx = c.find("android {")
               brace_idx = c.find("{", idx) + 1
               c = c[:brace_idx] + co + c[brace_idx:]
+          # Kotlin's own jvmTarget defaults independently of
+          # compileOptions and wasn't present as literal text for the
+          # regex above to catch -- without an explicit block it can
+          # silently stay at a lower default (e.g. 17), which then
+          # conflicts with Java's target (21) and fails the build.
+          if "kotlinOptions {" not in c and "android {" in c:
+              ko = (
+                  '\n    kotlinOptions {\n'
+                  '        jvmTarget = "21"\n'
+                  '    }\n'
+              ) if is_kts else (
+                  '\n    kotlinOptions {\n'
+                  '        jvmTarget = "21"\n'
+                  '    }\n'
+              )
+              idx = c.find("android {")
+              brace_idx = c.find("{", idx) + 1
+              c = c[:brace_idx] + ko + c[brace_idx:]
           flag = "isCoreLibraryDesugaringEnabled = true" if is_kts else "coreLibraryDesugaringEnabled true"
           if flag not in c and "compileOptions {" in c:
               c = c.replace("compileOptions {", f"compileOptions {{\n        {flag}", 1)
