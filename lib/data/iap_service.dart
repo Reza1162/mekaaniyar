@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_poolakey/flutter_poolakey.dart';
 import 'package:myket_iap/myket_iap.dart';
 import 'pro_manager.dart';
@@ -6,7 +7,7 @@ import 'pro_manager.dart';
 ///
 /// IMPORTANT — before this works, you must fill in the two RSA public
 /// keys below from your own developer panels:
-/// - Bazaar: پیشخان توسعه‌دهندگان کافه‌بازار → اطلاعات برنامه → پرداخت درون‌برنامه‌ای
+/// - Bazaar: پیشخوان توسعه‌دهندگان کافه‌بازار → اطلاعات برنامه → پرداخت درون‌برنامه‌ای
 /// - Myket: پنل توسعه‌دهندگان مایکت → همان بخش
 /// Without real keys, purchase calls will fail with a platform error —
 /// that's expected until you paste in your own keys.
@@ -30,22 +31,45 @@ class IapService {
   /// attempting a purchase, e.g. when the pro page opens.
   static Future<IapStore> detectStore() async {
     if (_activeStore != null) return _activeStore!;
+
+    // Poolakey's connect() is callback-based, not a returned bool, so we
+    // wrap it in a Completer to await a single yes/no outcome.
+    final bazaarConnected = Completer<bool>();
     try {
-      await FlutterPoolakey.init(IapConfig.bazaarRsaKey);
-      _activeStore = IapStore.bazaar;
-      return IapStore.bazaar;
+      await FlutterPoolakey.connect(
+        IapConfig.bazaarRsaKey,
+        onSucceed: () {
+          if (!bazaarConnected.isCompleted) bazaarConnected.complete(true);
+        },
+        onFailed: () {
+          if (!bazaarConnected.isCompleted) bazaarConnected.complete(false);
+        },
+        onDisconnected: () {
+          if (!bazaarConnected.isCompleted) bazaarConnected.complete(false);
+        },
+      );
+      final ok = await bazaarConnected.future.timeout(
+        const Duration(seconds: 5),
+        onTimeout: () => false,
+      );
+      if (ok) {
+        _activeStore = IapStore.bazaar;
+        return IapStore.bazaar;
+      }
     } catch (_) {
-      // Bazaar client not installed or init failed; try Myket.
+      // Bazaar client not installed or connect threw; try Myket next.
     }
+
     try {
       final result = await MyketIAP.init(rsaKey: IapConfig.myketRsaKey);
-      if (result.response.toString().toLowerCase().contains('ok')) {
+      if (result.isSuccess()) {
         _activeStore = IapStore.myket;
         return IapStore.myket;
       }
     } catch (_) {
       // Myket client not installed either.
     }
+
     _activeStore = IapStore.none;
     return IapStore.none;
   }
@@ -57,19 +81,25 @@ class IapService {
     final store = await detectStore();
     try {
       if (store == IapStore.bazaar) {
-        await FlutterPoolakey.purchase(IapConfig.proSku);
+        // Per Poolakey's own example, a completed (non-throwing) call to
+        // purchase() means success -- it doesn't expose a separate
+        // "check this field" success flag beyond that.
+        await FlutterPoolakey.purchase(
+          IapConfig.proSku,
+          payload: 'mekaaniyar-pro',
+        );
         await ProManager.activate();
         return true;
       }
       if (store == IapStore.myket) {
-        final result = await MyketIAP.launchPurchaseFlow(sku: IapConfig.proSku);
-        final iabResult = result[MyketIAP.RESULT];
-        final success = iabResult != null && iabResult.response.toString().toLowerCase().contains('ok');
-        if (success) {
-          await ProManager.activate();
-          return true;
-        }
-        return false;
+        final result = await MyketIAP.launchPurchaseFlow(
+          sku: IapConfig.proSku,
+          payload: 'mekaaniyar-pro',
+        );
+        final IabResult? iabResult = result[MyketIAP.RESULT];
+        final success = iabResult != null && iabResult.isSuccess();
+        if (success) await ProManager.activate();
+        return success;
       }
       return false; // no store detected — user isn't running Bazaar or Myket
     } catch (_) {
@@ -89,10 +119,9 @@ class IapService {
         return owns;
       }
       if (store == IapStore.myket) {
-        final result = await MyketIAP.queryInventory();
-        final inventory = result[MyketIAP.INVENTORY];
-        final owns = inventory != null &&
-            inventory.allPurchases.any((p) => p.sku == IapConfig.proSku);
+        final result = await MyketIAP.getPurchase(sku: IapConfig.proSku, querySkuDetails: false);
+        final IabResult? iabResult = result[MyketIAP.RESULT];
+        final owns = iabResult != null && iabResult.isSuccess();
         if (owns) await ProManager.activate();
         return owns;
       }

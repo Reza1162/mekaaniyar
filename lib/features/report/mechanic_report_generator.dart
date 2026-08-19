@@ -4,11 +4,11 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'package:arabic_reshaper/arabic_reshaper.dart';
-import '../garage/garage_repository.dart';
-import '../garage/service_log_repository.dart';
-import '../obd2/obd2_log_repository.dart';
-import '../obd2/obd2_pids.dart';
-import '../obd2/dtc_decoder.dart';
+import '../../data/garage/garage_repository.dart';
+import '../../data/garage/service_log_repository.dart';
+import '../../data/obd2/obd2_log_repository.dart';
+import '../../data/obd2/obd2_pids.dart';
+import '../../data/obd2/dtc_decoder.dart';
 
 /// Builds a "report for the mechanic" PDF combining what's already
 /// tracked in the app: vehicle info, service due-status, and the most
