@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        store: [bazaar, myket]
     steps:
       - uses: actions/checkout@v4
 
@@ -20,6 +23,28 @@ jobs:
           mkdir -p assets/fonts
           curl -L -o assets/fonts/Vazirmatn-Regular.ttf https://github.com/rastikerdar/vazirmatn/raw/main/fonts/ttf/Vazirmatn-Regular.ttf
           curl -L -o assets/fonts/Vazirmatn-Bold.ttf https://github.com/rastikerdar/vazirmatn/raw/main/fonts/ttf/Vazirmatn-Bold.ttf
+
+      - name: انتخاب پیاده‌سازی پرداخت (${{ matrix.store }})
+        run: |
+          cp store_variants/iap_service_${{ matrix.store }}.dart lib/data/iap_service.dart
+
+      - name: افزودن وابستگی فروشگاه (${{ matrix.store }})
+        run: |
+          python3 - << 'PYEOF'
+          store = "${{ matrix.store }}"
+          dep_lines = {
+              "bazaar": "  flutter_poolakey: ^2.2.0+1.0.0\n",
+              "myket": "  myket_iap: ^1.0.1\n",
+          }
+          with open("pubspec.yaml") as f:
+              c = f.read()
+          marker = "  arabic_reshaper: ^0.0.1\n"
+          assert marker in c, "marker line not found in pubspec.yaml"
+          c = c.replace(marker, marker + dep_lines[store], 1)
+          with open("pubspec.yaml", "w") as f:
+              f.write(c)
+          print("added dependency for", store)
+          PYEOF
 
       - run: flutter pub get
 
@@ -63,7 +88,6 @@ jobs:
               if 'jitpack.io' in c:
                   return False
               jit = "maven { url = uri(\"https://jitpack.io\") }" if is_kts else "maven { url 'https://jitpack.io' }"
-              # Try dependencyResolutionManagement.repositories (new Flutter/AGP template)
               m = re.search(r'(dependencyResolutionManagement\s*\{[^}]*repositories\s*\{)', c, re.S)
               if m:
                   idx = m.end()
@@ -71,7 +95,6 @@ jobs:
                   with open(path, 'w') as f:
                       f.write(c)
                   return True
-              # Fallback: old-style allprojects.repositories in top-level build.gradle
               m = re.search(r'(allprojects\s*\{[^}]*repositories\s*\{)', c, re.S)
               if m:
                   idx = m.end()
@@ -138,27 +161,6 @@ jobs:
                   c = c.replace("dependencies {", f"dependencies {{\n    {dep}", 1)
               else:
                   c += f"\ndependencies {{\n    {dep}\n}}\n"
-          # Poolakey (Bazaar) and myket-billing-client both bundle an
-          # identical copy of the classic Google IAB AIDL stub, which
-          # collides as a duplicate class at package time. Excluding it
-          # from packaging is safe -- both copies are byte-identical and
-          # only one is ever loaded at runtime.
-          if "packaging {" not in c and "packagingOptions {" not in c:
-              exclude_block = (
-                  '\n    packaging {\n'
-                  '        resources {\n'
-                  '            excludes += "com/android/vending/billing/**"\n'
-                  '        }\n'
-                  '    }\n'
-              ) if is_kts else (
-                  '\n    packagingOptions {\n'
-                  '        exclude "com/android/vending/billing/**"\n'
-                  '    }\n'
-              )
-              idx = c.find("android {")
-              if idx != -1:
-                  brace_idx = c.find("{", idx) + 1
-                  c = c[:brace_idx] + exclude_block + c[brace_idx:]
           open(path, "w").write(c)
           print("patched OK")
           PYEOF
@@ -167,6 +169,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mekaaniyar-apk
+          name: mekaaniyar-${{ matrix.store }}
           path: build/app/outputs/flutter-apk/app-release.apk
-# trigger

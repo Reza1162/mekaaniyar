@@ -22,8 +22,6 @@ dependencies:
   share_plus: ^10.0.2
   pdf: ^3.11.1
   arabic_reshaper: ^0.0.1
-  flutter_poolakey: ^2.2.0+1.0.0
-  myket_iap: ^1.0.1
 
 dev_dependencies:
   flutter_test:
