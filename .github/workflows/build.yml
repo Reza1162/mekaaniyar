@@ -161,6 +161,21 @@ jobs:
                   c = c.replace("dependencies {", f"dependencies {{\n    {dep}", 1)
               else:
                   c += f"\ndependencies {{\n    {dep}\n}}\n"
+          store = "${{ matrix.store }}"
+          if store == "myket" and "marketApplicationId" not in c:
+              placeholders = (
+                  '\n        manifestPlaceholders["marketApplicationId"] = "ir.mservices.market"\n'
+                  '        manifestPlaceholders["marketBindAddress"] = "ir.mservices.market.InAppBillingService.BIND"\n'
+                  '        manifestPlaceholders["marketPermission"] = "ir.mservices.market.BILLING"\n'
+              ) if is_kts else (
+                  '\n        manifestPlaceholders += [marketApplicationId: "ir.mservices.market",'
+                  ' marketBindAddress: "ir.mservices.market.InAppBillingService.BIND",'
+                  ' marketPermission: "ir.mservices.market.BILLING"]\n'
+              )
+              idx = c.find("defaultConfig {")
+              if idx != -1:
+                  brace_idx = c.find("{", idx) + 1
+                  c = c[:brace_idx] + placeholders + c[brace_idx:]
           open(path, "w").write(c)
           print("patched OK")
           PYEOF
