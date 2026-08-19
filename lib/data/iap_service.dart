@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_poolakey/flutter_poolakey.dart';
 import 'package:myket_iap/myket_iap.dart';
+import 'package:myket_iap/util/iab_result.dart';
 import 'pro_manager.dart';
 
 /// Unified in-app purchase handling for both major Iranian app stores.
@@ -62,7 +63,7 @@ class IapService {
 
     try {
       final result = await MyketIAP.init(rsaKey: IapConfig.myketRsaKey);
-      if (result.isSuccess()) {
+      if (result?.isSuccess() ?? false) {
         _activeStore = IapStore.myket;
         return IapStore.myket;
       }
