@@ -7,3 +7,5 @@ android/
 ios/
 .idea/
 *.g.dart
+*.jks
+keystore_base64.txt
