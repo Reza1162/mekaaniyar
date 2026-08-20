@@ -29,7 +29,8 @@ class IapService {
   static Future<IapStore> detectStore() async {
     if (_activeStore != null) return _activeStore!;
     try {
-      final result = await MyketIAP.init(rsaKey: IapConfig.myketRsaKey);
+      final result = await MyketIAP.init(rsaKey: IapConfig.myketRsaKey)
+          .timeout(const Duration(seconds: 6), onTimeout: () => null);
       _activeStore = (result?.isSuccess() ?? false) ? IapStore.myket : IapStore.none;
       return _activeStore!;
     } catch (_) {
@@ -45,7 +46,7 @@ class IapService {
       final result = await MyketIAP.launchPurchaseFlow(
         sku: IapConfig.proSku,
         payload: 'mekaaniyar-pro',
-      );
+      ).timeout(const Duration(seconds: 30));
       final IabResult? iabResult = result[MyketIAP.RESULT];
       final success = iabResult != null && iabResult.isSuccess();
       if (success) await ProManager.activate();
@@ -59,7 +60,8 @@ class IapService {
     final store = await detectStore();
     if (store != IapStore.myket) return false;
     try {
-      final result = await MyketIAP.getPurchase(sku: IapConfig.proSku, querySkuDetails: false);
+      final result = await MyketIAP.getPurchase(sku: IapConfig.proSku, querySkuDetails: false)
+          .timeout(const Duration(seconds: 10));
       final IabResult? iabResult = result[MyketIAP.RESULT];
       final owns = iabResult != null && iabResult.isSuccess();
       if (owns) await ProManager.activate();
