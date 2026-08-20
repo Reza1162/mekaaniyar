@@ -178,26 +178,14 @@ jobs:
               idx = c.find("android {")
               brace_idx = c.find("{", idx) + 1
               c = c[:brace_idx] + co + c[brace_idx:]
-          # Kotlin's own jvmTarget must be set via the new top-level
-          # kotlin { compilerOptions { ... } } block under AGP 9 --
-          # the old android { kotlinOptions { ... } } DSL is not just
-          # deprecated but a hard build-script error at this AGP
-          # version. This block is intentionally a SIBLING of android{},
-          # not nested inside it.
-          if "compilerOptions {" not in c:
-              kotlin_block = (
-                  '\n\nkotlin {\n'
-                  '    compilerOptions {\n'
-                  '        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21\n'
-                  '    }\n'
-                  '}\n'
-              ) if is_kts else (
-                  '\n\nkotlin {\n'
-                  '    compilerOptions {\n'
-                  '        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21\n'
-                  '    }\n'
-                  '}\n'
-              )
+          # Gradle's own error for "Inconsistent JVM Target Compatibility"
+          # explicitly recommends a JVM toolchain over manually setting
+          # jvmTarget per task-type (which kept drifting out of sync
+          # here) -- a toolchain pins both javac and kotlinc to the same
+          # JDK at once. This must be a top-level block, sibling to
+          # android{}, not nested inside it.
+          if "jvmToolchain" not in c:
+              kotlin_block = '\n\nkotlin {\n    jvmToolchain(21)\n}\n'
               c += kotlin_block
           flag = "isCoreLibraryDesugaringEnabled = true" if is_kts else "coreLibraryDesugaringEnabled true"
           if flag not in c and "compileOptions {" in c:
