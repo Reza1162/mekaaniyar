@@ -212,8 +212,18 @@ jobs:
                   brace_idx = c.find("{", idx) + 1
                   c = c[:brace_idx] + placeholders + c[brace_idx:]
           open(path, "w").write(c)
-          print("patched OK")
+          print("patched OK, final content:")
+          print(open(path).read())
           PYEOF
+
+      - name: نمایش فایل نهایی برای عیب‌یابی
+        run: |
+          echo "=== android/app/build.gradle.kts ==="
+          cat android/app/build.gradle.kts 2>/dev/null || echo "(فایل .kts وجود نداره)"
+          echo "=== android/app/build.gradle (اگه بجاش این باشه) ==="
+          cat android/app/build.gradle 2>/dev/null || echo "(فایل .gradle وجود نداره)"
+          echo "=== لیست همه‌ی فایل‌های build.gradle موجود ==="
+          find android -name "build.gradle*" -maxdepth 3
 
       - run: flutter build apk --release
 
