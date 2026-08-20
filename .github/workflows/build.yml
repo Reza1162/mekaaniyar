@@ -215,6 +215,122 @@ jobs:
           print(open(path).read())
           PYEOF
 
+      - name: تنظیم امضای انتشار (Signing)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/mekaaniyar-release.jks
+
+          cat > android/key.properties << EOF
+          storePassword=$KEYSTORE_PASSWORD
+          keyPassword=$KEY_PASSWORD
+          keyAlias=$KEY_ALIAS
+          storeFile=mekaaniyar-release.jks
+          EOF
+
+          python3 - << 'PYEOF'
+          import os
+
+          path = "android/app/build.gradle.kts"
+          is_kts = True
+          if not os.path.exists(path):
+              path = "android/app/build.gradle"
+              is_kts = False
+
+          with open(path) as f:
+              c = f.read()
+
+          if "key.properties" in c:
+              print("signing config already present, skipping")
+          else:
+              if is_kts:
+                  loader = (
+                      'import java.util.Properties\n'
+                      'import java.io.FileInputStream\n\n'
+                  )
+                  if loader not in c:
+                      c = loader + c
+
+                  keyprops_block = (
+                      '\nval keystoreProperties = Properties()\n'
+                      'val keystorePropertiesFile = rootProject.file("key.properties")\n'
+                      'if (keystorePropertiesFile.exists()) {\n'
+                      '    keystoreProperties.load(FileInputStream(keystorePropertiesFile))\n'
+                      '}\n'
+                  )
+                  idx = c.find("android {")
+                  c = c[:idx] + keyprops_block + "\n" + c[idx:]
+
+                  signing_block = (
+                      '\n    signingConfigs {\n'
+                      '        create("release") {\n'
+                      '            keyAlias = keystoreProperties["keyAlias"] as String?\n'
+                      '            keyPassword = keystoreProperties["keyPassword"] as String?\n'
+                      '            storeFile = keystoreProperties["storeFile"]?.let { file(it as String) }\n'
+                      '            storePassword = keystoreProperties["storePassword"] as String?\n'
+                      '        }\n'
+                      '    }\n'
+                  )
+                  idx = c.find("android {")
+                  brace_idx = c.find("{", idx) + 1
+                  c = c[:brace_idx] + signing_block + c[brace_idx:]
+
+                  import re
+                  if re.search(r'buildTypes\s*\{', c):
+                      def add_signing(m):
+                          block = m.group(0)
+                          if "signingConfig" not in block:
+                              rb = block.find("{", block.find("release"))
+                              block = block[:rb+1] + '\n            signingConfig = signingConfigs.getByName("release")' + block[rb+1:]
+                          return block
+                      c = re.sub(r'buildTypes\s*\{.*?\n    \}', add_signing, c, count=1, flags=re.S)
+              else:
+                  loader = "\nimport java.util.Properties\nimport java.io.FileInputStream\n"
+                  if "import java.util.Properties" not in c:
+                      c = loader + c
+
+                  keyprops_block = (
+                      '\ndef keystoreProperties = new Properties()\n'
+                      'def keystorePropertiesFile = rootProject.file("key.properties")\n'
+                      'if (keystorePropertiesFile.exists()) {\n'
+                      '    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))\n'
+                      '}\n'
+                  )
+                  idx = c.find("android {")
+                  c = c[:idx] + keyprops_block + "\n" + c[idx:]
+
+                  signing_block = (
+                      '\n    signingConfigs {\n'
+                      '        release {\n'
+                      '            keyAlias keystoreProperties["keyAlias"]\n'
+                      '            keyPassword keystoreProperties["keyPassword"]\n'
+                      '            storeFile keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null\n'
+                      '            storePassword keystoreProperties["storePassword"]\n'
+                      '        }\n'
+                      '    }\n'
+                  )
+                  idx = c.find("android {")
+                  brace_idx = c.find("{", idx) + 1
+                  c = c[:brace_idx] + signing_block + c[brace_idx:]
+
+                  import re
+                  if re.search(r'buildTypes\s*\{', c):
+                      def add_signing(m):
+                          block = m.group(0)
+                          if "signingConfig" not in block:
+                              rb = block.find("{", block.find("release"))
+                              block = block[:rb+1] + '\n            signingConfig signingConfigs.release' + block[rb+1:]
+                          return block
+                      c = re.sub(r'buildTypes\s*\{.*?\n    \}', add_signing, c, count=1, flags=re.S)
+
+              with open(path, "w") as f:
+                  f.write(c)
+              print("signing config added to", path)
+          PYEOF
+
       - name: نمایش فایل نهایی برای عیب‌یابی
         run: |
           echo "=== android/app/build.gradle.kts ==="
