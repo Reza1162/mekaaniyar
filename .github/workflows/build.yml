@@ -162,6 +162,14 @@ jobs:
           # own source/target compatibility must be at least that high
           # or javac refuses to read those class files.
           c = re.sub(r'JavaVersion\.VERSION_\d+(_\d+)?', 'JavaVersion.VERSION_21', c)
+          # Flutter's own generated template already includes a
+          # kotlin { compilerOptions { jvmTarget = ...JvmTarget.JVM_17 } }
+          # block -- a completely different token pattern than
+          # JavaVersion.VERSION_17, so the substitution above never
+          # touched it. That's the actual block Gradle was reading,
+          # which is why every previous attempt to add a *new* block
+          # alongside it had no effect.
+          c = re.sub(r'JvmTarget\.JVM_\d+', 'JvmTarget.JVM_21', c)
           c = re.sub(r'jvmTarget\s*=\s*[\'"]\d+[\'"]', 'jvmTarget = "21"', c)
           if "compileOptions {" not in c and "android {" in c:
               co = (
@@ -178,15 +186,6 @@ jobs:
               idx = c.find("android {")
               brace_idx = c.find("{", idx) + 1
               c = c[:brace_idx] + co + c[brace_idx:]
-          # Gradle's own error for "Inconsistent JVM Target Compatibility"
-          # explicitly recommends a JVM toolchain over manually setting
-          # jvmTarget per task-type (which kept drifting out of sync
-          # here) -- a toolchain pins both javac and kotlinc to the same
-          # JDK at once. This must be a top-level block, sibling to
-          # android{}, not nested inside it.
-          if "jvmToolchain" not in c:
-              kotlin_block = '\n\nkotlin {\n    jvmToolchain(21)\n}\n'
-              c += kotlin_block
           flag = "isCoreLibraryDesugaringEnabled = true" if is_kts else "coreLibraryDesugaringEnabled true"
           if flag not in c and "compileOptions {" in c:
               c = c.replace("compileOptions {", f"compileOptions {{\n        {flag}", 1)
