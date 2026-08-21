@@ -102,6 +102,9 @@ jobs:
           print("applicationId set to", APP_ID, "in", path)
           INNEREOF
 
+      - name: ساخت آیکون اپ برای همه‌ی سایزها
+        run: dart run flutter_launcher_icons
+
       - name: پچ JitPack repo (لازمه‌ی Poolakey/بازار)
         run: |
           python3 << 'PYEOF'
