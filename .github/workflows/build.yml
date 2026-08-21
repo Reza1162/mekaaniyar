@@ -100,6 +100,43 @@ jobs:
           with open(path, "w") as f:
               f.write(c)
           print("applicationId set to", APP_ID, "in", path)
+
+          # --- جابجایی واقعی فایل سورس MainActivity به پکیج جدید ---
+          src_root = "android/app/src/main/kotlin"
+          main_activity_path = None
+          for dirpath, _, filenames in os.walk(src_root):
+              if "MainActivity.kt" in filenames:
+                  main_activity_path = os.path.join(dirpath, "MainActivity.kt")
+                  break
+
+          assert main_activity_path, "MainActivity.kt پیدا نشد!"
+
+          with open(main_activity_path) as f:
+              activity_content = f.read()
+
+          new_package_path = os.path.join(src_root, *APP_ID.split("."))
+          os.makedirs(new_package_path, exist_ok=True)
+          new_activity_path = os.path.join(new_package_path, "MainActivity.kt")
+
+          activity_content = re.sub(
+              r'^package\s+[\w.]+',
+              f'package {APP_ID}',
+              activity_content,
+              count=1,
+              flags=re.MULTILINE,
+          )
+
+          with open(new_activity_path, "w") as f:
+              f.write(activity_content)
+
+          if os.path.abspath(new_activity_path) != os.path.abspath(main_activity_path):
+              os.remove(main_activity_path)
+              d = os.path.dirname(main_activity_path)
+              while d != src_root and not os.listdir(d):
+                  os.rmdir(d)
+                  d = os.path.dirname(d)
+
+          print("MainActivity.kt منتقل شد به:", new_activity_path)
           INNEREOF
 
       - name: ساخت آیکون اپ برای همه‌ی سایزها
