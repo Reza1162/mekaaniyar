@@ -81,6 +81,27 @@ jobs:
 
       - run: flutter create --platforms=android .
 
+      - name: تنظیم applicationId یکتا
+        run: |
+          python3 - << 'INNEREOF'
+          import re, os
+
+          APP_ID = "ir.manatak.mekaaniyar"
+
+          path = "android/app/build.gradle.kts"
+          if not os.path.exists(path):
+              path = "android/app/build.gradle"
+          with open(path) as f:
+              c = f.read()
+
+          c = re.sub(r'namespace\s*=?\s*"[^"]*"', f'namespace = "{APP_ID}"', c, count=1)
+          c = re.sub(r'applicationId\s*=?\s*"[^"]*"', f'applicationId = "{APP_ID}"', c, count=1)
+
+          with open(path, "w") as f:
+              f.write(c)
+          print("applicationId set to", APP_ID, "in", path)
+          INNEREOF
+
       - name: پچ JitPack repo (لازمه‌ی Poolakey/بازار)
         run: |
           python3 << 'PYEOF'
