@@ -13,11 +13,13 @@ class RemapSection {
 class RemapCategory {
   final String id;
   final String title;
+  final bool isPro;
   final List<RemapSection> sections;
-  RemapCategory({required this.id, required this.title, required this.sections});
+  RemapCategory({required this.id, required this.title, required this.isPro, required this.sections});
   factory RemapCategory.fromJson(Map<String, dynamic> j) => RemapCategory(
         id: j['id'],
         title: j['title'],
+        isPro: j['isPro'] ?? false,
         sections: (j['sections'] as List).map((s) => RemapSection.fromJson(s)).toList());
 }
 

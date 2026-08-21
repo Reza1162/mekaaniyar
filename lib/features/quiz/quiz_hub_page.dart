@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../data/quiz_repository.dart';
 import '../../data/content_repository.dart';
 import '../../data/quiz_score_repository.dart';
+import '../../data/pro_manager.dart';
+import '../pro/pro_page.dart';
 import 'quiz_session_page.dart';
 
 class QuizHubPage extends StatefulWidget {
@@ -16,6 +18,7 @@ class _QuizHubPageState extends State<QuizHubPage> {
   List<Chapter> _chapters = [];
   Map<String, int> _bestScores = {};
   bool _loading = true;
+  bool _isPro = false;
 
   @override
   void initState() {
@@ -26,6 +29,7 @@ class _QuizHubPageState extends State<QuizHubPage> {
   Future<void> _load() async {
     final quizzes = await QuizRepository.loadAll();
     final chapters = await ContentRepository.loadChapters();
+    final isPro = await ProManager.isPro();
     final scores = <String, int>{};
     for (final q in quizzes) {
       scores[q.chapterId] = await QuizScoreRepository.bestScore(q.chapterId);
@@ -35,6 +39,7 @@ class _QuizHubPageState extends State<QuizHubPage> {
       _quizzes = quizzes;
       _chapters = chapters;
       _bestScores = scores;
+      _isPro = isPro;
       _loading = false;
     });
   }
@@ -61,23 +66,42 @@ class _QuizHubPageState extends State<QuizHubPage> {
                     ? Color(int.parse(chapter.color.replaceFirst('#', 'FF'), radix: 16))
                     : Colors.blueGrey;
                 final best = _bestScores[quiz.chapterId] ?? 0;
+                final locked = (chapter?.isPro ?? false) && !_isPro;
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(12),
                     leading: CircleAvatar(
-                      backgroundColor: color.withOpacity(0.12),
-                      child: Icon(Icons.quiz_outlined, color: color),
+                      backgroundColor: locked
+                          ? Colors.grey.withOpacity(0.12)
+                          : color.withOpacity(0.12),
+                      child: Icon(
+                          locked ? Icons.lock_outline : Icons.quiz_outlined,
+                          color: locked ? Colors.grey : color),
                     ),
-                    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(title,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: locked ? Colors.grey : null)),
                     subtitle: Text('${quiz.questions.length} سوال'
                         '${best > 0 ? ' · بهترین نتیجه: $best از ${quiz.questions.length}' : ''}'),
                     trailing: const Icon(Icons.chevron_left),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => QuizSessionPage(quiz: quiz, chapterTitle: title, color: color),
-                      ),
-                    ).then((_) => _load()),
+                    onTap: () {
+                      if (locked) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const ProPage()),
+                        );
+                      } else {
+                        Navigator.of(context)
+                            .push(
+                              MaterialPageRoute(
+                                builder: (_) => QuizSessionPage(
+                                    quiz: quiz, chapterTitle: title, color: color),
+                              ),
+                            )
+                            .then((_) => _load());
+                      }
+                    },
                   ),
                 );
               },

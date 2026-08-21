@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/remap_repository.dart';
+import '../../data/pro_manager.dart';
+import '../pro/pro_page.dart';
 
 class RemapPage extends StatefulWidget {
   const RemapPage({super.key});
@@ -12,14 +14,21 @@ class RemapPage extends StatefulWidget {
 class _RemapPageState extends State<RemapPage> {
   List<RemapCategory> _categories = [];
   bool _loading = true;
+  bool _isPro = false;
 
   @override
   void initState() {
     super.initState();
-    RemapRepository.load().then((c) => setState(() {
-          _categories = c;
-          _loading = false;
-        }));
+    Future.wait([
+      RemapRepository.load(),
+      ProManager.isPro(),
+    ]).then((results) {
+      setState(() {
+        _categories = results[0] as List<RemapCategory>;
+        _isPro = results[1] as bool;
+        _loading = false;
+      });
+    });
   }
 
   @override
@@ -70,31 +79,55 @@ class _RemapPageState extends State<RemapPage> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: Text(cat.title,
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
+                          child: Row(
+                            children: [
+                              Text(cat.title,
+                                  style: const TextStyle(
+                                      fontSize: 16, fontWeight: FontWeight.bold)),
+                              if (cat.isPro && !_isPro) ...[
+                                const SizedBox(width: 6),
+                                const Icon(Icons.lock_outline,
+                                    size: 16, color: Colors.grey),
+                              ],
+                            ],
+                          ),
                         ),
-                        ...cat.sections.map((sec) => Card(
+                        ...cat.sections.map((sec) {
+                          final locked = cat.isPro && !_isPro;
+                          return Card(
                               margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor: Color(0x1A880E4F),
-                                  child: Icon(Icons.memory,
-                                      color: Color(0xFF880E4F)),
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0x1A880E4F),
+                                  child: Icon(
+                                      locked ? Icons.lock_outline : Icons.memory,
+                                      color: locked
+                                          ? Colors.grey
+                                          : const Color(0xFF880E4F)),
                                 ),
                                 title: Text(sec.title,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600)),
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        color: locked ? Colors.grey : null)),
                                 trailing: const Icon(Icons.chevron_left,
                                     color: Colors.grey),
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        _RemapSectionPage(section: sec),
-                                  ),
-                                ),
-                              ),
-                            )),
+                                onTap: () {
+                                  if (locked) {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                          builder: (_) => const ProPage()),
+                                    );
+                                  } else {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            _RemapSectionPage(section: sec),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ));
+                        }),
                       ],
                     )),
               ],

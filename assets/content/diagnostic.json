@@ -115,7 +115,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": false
     },
     {
       "id": "starting_problem",
@@ -239,7 +240,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": false
     },
     {
       "id": "overheating",
@@ -309,7 +311,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "brake_problem",
@@ -399,7 +402,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": false
     },
     {
       "id": "transmission_problem",
@@ -520,7 +524,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "engine_smoke",
@@ -660,7 +665,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "fuel_consumption",
@@ -756,7 +762,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "engine_vibration",
@@ -848,7 +855,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "ac_problem",
@@ -954,7 +962,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "suspension_noise",
@@ -1081,7 +1090,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     },
     {
       "id": "electrical_problem",
@@ -1176,7 +1186,8 @@
             ]
           }
         }
-      ]
+      ],
+      "isPro": true
     }
   ]
 }
