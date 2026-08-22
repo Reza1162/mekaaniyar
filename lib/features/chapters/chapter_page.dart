@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/content_repository.dart';
 import '../../data/bookmark_db.dart';
@@ -217,23 +218,55 @@ class _SectionPageState extends State<SectionPage> {
           ),
         ],
       ),
-      body: Markdown(
-        data: widget.section.content,
-        padding: const EdgeInsets.all(16),
-        styleSheet: MarkdownStyleSheet(
-          h1: const TextStyle(fontFamily: 'Vazir', fontSize: 20, fontWeight: FontWeight.bold),
-          h2: const TextStyle(fontFamily: 'Vazir', fontSize: 17, fontWeight: FontWeight.bold),
-          h3: const TextStyle(fontFamily: 'Vazir', fontSize: 15, fontWeight: FontWeight.w600),
-          p: const TextStyle(fontFamily: 'Vazir', fontSize: 14, height: 1.8),
-          tableHead: const TextStyle(fontFamily: 'Vazir', fontWeight: FontWeight.bold),
-          tableBody: const TextStyle(fontFamily: 'Vazir', fontSize: 13),
-          blockquoteDecoration: BoxDecoration(
-            color: AppTheme.primaryLight,
-            borderRadius: BorderRadius.circular(8),
-            border: Border(right: BorderSide(color: widget.color, width: 4)),
+      body: Column(
+        children: [
+          if (widget.section.videoUrl != null && widget.section.videoUrl!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: widget.color,
+                    side: BorderSide(color: widget.color),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.play_circle_outline),
+                  label: const Text('مشاهده‌ی ویدیوی آموزشی مرتبط'),
+                  onPressed: () async {
+                    final url = Uri.parse(widget.section.videoUrl!);
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } else if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('امکان باز کردن لینک ویدیو نبود')),
+                      );
+                    }
+                  },
+                ),
+              ),
+            ),
+          Expanded(
+            child: Markdown(
+              data: widget.section.content,
+              padding: const EdgeInsets.all(16),
+              styleSheet: MarkdownStyleSheet(
+                h1: const TextStyle(fontFamily: 'Vazir', fontSize: 20, fontWeight: FontWeight.bold),
+                h2: const TextStyle(fontFamily: 'Vazir', fontSize: 17, fontWeight: FontWeight.bold),
+                h3: const TextStyle(fontFamily: 'Vazir', fontSize: 15, fontWeight: FontWeight.w600),
+                p: const TextStyle(fontFamily: 'Vazir', fontSize: 14, height: 1.8),
+                tableHead: const TextStyle(fontFamily: 'Vazir', fontWeight: FontWeight.bold),
+                tableBody: const TextStyle(fontFamily: 'Vazir', fontSize: 13),
+                blockquoteDecoration: BoxDecoration(
+                  color: AppTheme.primaryLight,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border(right: BorderSide(color: widget.color, width: 4)),
+                ),
+                code: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+              ),
+            ),
           ),
-          code: const TextStyle(fontFamily: 'monospace', fontSize: 12),
-        ),
+        ],
       ),
     );
   }
