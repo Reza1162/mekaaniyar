@@ -8,7 +8,6 @@ import '../../data/bookmark_db.dart';
 import '../../data/pro_manager.dart';
 import '../../data/quiz_repository.dart';
 import '../pro/pro_page.dart';
-import '../../widgets/tech_diagrams.dart';
 import '../quiz/quiz_session_page.dart';
 
 class ChapterPage extends StatefulWidget {
@@ -247,21 +246,6 @@ class _SectionPageState extends State<SectionPage> {
                   },
                 ),
               ),
-            ),
-          if (widget.section.id == 'engine_basics')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: FourStrokeDiagram(),
-            ),
-          if (widget.section.id == 'cooling')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: CoolingSystemDiagram(),
-            ),
-          if (widget.section.id == 'turbo_full')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: TurboSystemDiagram(),
             ),
           Expanded(
             child: Markdown(
