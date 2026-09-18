@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/content_repository.dart';
@@ -251,16 +250,6 @@ class _SectionPageState extends State<SectionPage> {
             child: Markdown(
               data: widget.section.content,
               padding: const EdgeInsets.all(16),
-              imageBuilder: (uri, title, alt) {
-                final path = 'assets/content/${uri.toString()}';
-                if (path.toLowerCase().endsWith('.svg')) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: SvgPicture.asset(path, width: double.infinity, fit: BoxFit.contain),
-                  );
-                }
-                return Image.asset(path, fit: BoxFit.contain);
-              },
               styleSheet: MarkdownStyleSheet(
                 h1: const TextStyle(fontFamily: 'Vazir', fontSize: 20, fontWeight: FontWeight.bold),
                 h2: const TextStyle(fontFamily: 'Vazir', fontSize: 17, fontWeight: FontWeight.bold),
