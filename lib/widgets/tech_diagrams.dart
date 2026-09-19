@@ -152,3 +152,39 @@ class TurboSystemDiagram extends StatelessWidget {
     );
   }
 }
+
+/// لایه‌های رنگ‌آمیزی خودرو
+class PaintLayersDiagram extends StatelessWidget {
+  const PaintLayersDiagram({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const FlowDiagram(
+      caption: 'هر لایه روی لایه قبلی اعمال می‌شود — کلیرکوت آخرین و محافظ‌ترین لایه است',
+      items: [
+        FlowItem('فلز بدنه', sublabel: 'سطح آماده‌شده', color: Color(0xFF5A7CA0)),
+        FlowItem('فسفاته/E-coat', sublabel: 'ضدزنگ اولیه', color: Color(0xFF2C3E50)),
+        FlowItem('پرایمر', sublabel: 'یکنواخت‌کننده سطح', color: Color(0xFFC99A3B)),
+        FlowItem('بیس‌کوت', sublabel: 'رنگ اصلی', color: Color(0xFFB2691A)),
+        FlowItem('کلیرکوت', sublabel: 'محافظ شفاف', color: Color(0xFF3B7A57)),
+      ],
+    );
+  }
+}
+
+/// مسیر تصمیم‌گیری روش تعمیر بدنه بر اساس شدت خسارت
+class DamageRepairFlowDiagram extends StatelessWidget {
+  const DamageRepairFlowDiagram({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const FlowDiagram(
+      caption: 'با افزایش شدت خسارت، روش تعمیر از سمت راست به چپ تغییر می‌کند',
+      items: [
+        FlowItem('فرورفتگی سطحی', sublabel: 'PDR', color: Color(0xFF3B7A57)),
+        FlowItem('کشیدگی فلز', sublabel: 'چکش و سندان', color: Color(0xFFC99A3B)),
+        FlowItem('آسیب رنگ', sublabel: 'بتونه + رنگ', color: Color(0xFFB2691A)),
+        FlowItem('آسیب ساختاری', sublabel: 'اتاق‌کشی', color: Color(0xFFB23A3A)),
+        FlowItem('فلز از دست‌رفته', sublabel: 'تعویض پانل', color: Color(0xFF2C3E50)),
+      ],
+    );
+  }
+}
