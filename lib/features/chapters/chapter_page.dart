@@ -205,8 +205,26 @@ class _SectionPageState extends State<SectionPage> {
     });
   }
 
+  Widget? _diagramForSection() {
+    switch (widget.section.id) {
+      case 'engine_basics':
+        return const FourStrokeDiagram();
+      case 'cooling':
+        return const CoolingSystemDiagram();
+      case 'turbo_full':
+        return const TurboSystemDiagram();
+      case 'paint_process':
+        return const PaintLayersDiagram();
+      case 'body_repair_basics':
+        return const DamageRepairFlowDiagram();
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final diagram = _diagramForSection();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.section.title),
@@ -248,30 +266,10 @@ class _SectionPageState extends State<SectionPage> {
                 ),
               ),
             ),
-          if (widget.section.id == 'engine_basics')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: FourStrokeDiagram(),
-            ),
-          if (widget.section.id == 'cooling')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: CoolingSystemDiagram(),
-            ),
-          if (widget.section.id == 'turbo_full')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: TurboSystemDiagram(),
-            ),
-          if (widget.section.id == 'paint_process')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: PaintLayersDiagram(),
-            ),
-          if (widget.section.id == 'body_repair_basics')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: DamageRepairFlowDiagram(),
+          if (diagram != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: diagram,
             ),
           Expanded(
             child: Markdown(
