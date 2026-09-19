@@ -263,16 +263,6 @@ class _SectionPageState extends State<SectionPage> {
               padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: TurboSystemDiagram(),
             ),
-          if (widget.section.id == 'paint_process')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: PaintLayersDiagram(),
-            ),
-          if (widget.section.id == 'body_repair_basics')
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: DamageRepairFlowDiagram(),
-            ),
           Expanded(
             child: Markdown(
               data: widget.section.content,
