@@ -399,21 +399,7 @@ class _ChapterCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.35),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 22),
-                ),
+                _AnimatedChapterIcon(icon: icon, color: color),
                 if (chapter.isPro)
                   Container(
                     padding:
@@ -460,6 +446,101 @@ class _ChapterCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Animated icon badge for chapter cards: a soft, continuously breathing
+/// glow ring behind the icon plus a gentle one-time scale/fade entrance —
+/// pure Flutter animation, no external assets or network needed.
+class _AnimatedChapterIcon extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  const _AnimatedChapterIcon({required this.icon, required this.color});
+
+  @override
+  State<_AnimatedChapterIcon> createState() => _AnimatedChapterIconState();
+}
+
+class _AnimatedChapterIconState extends State<_AnimatedChapterIcon>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _glow;
+  late final Animation<double> _entrance;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1900),
+    )..repeat(reverse: true);
+    _glow = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    // One-time entrance: pop in with a slight overshoot the first time
+    // this card appears on screen.
+    _entrance = CurvedAnimation(parent: _controller, curve: const Interval(0, 1));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.75, end: 1.0),
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.elasticOut,
+      builder: (context, entranceScale, child) => Transform.scale(
+        scale: entranceScale,
+        child: child,
+      ),
+      child: AnimatedBuilder(
+        animation: _glow,
+        builder: (context, child) {
+          final glowStrength = 0.25 + (_glow.value * 0.35);
+          final ringScale = 1.0 + (_glow.value * 0.18);
+          return SizedBox(
+            width: 44,
+            height: 44,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform.scale(
+                  scale: ringScale,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.color.withOpacity(glowStrength * 0.25),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: widget.color,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: widget.color.withOpacity(glowStrength),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Icon(widget.icon, color: Colors.white, size: 22),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
