@@ -276,33 +276,6 @@ jobs:
           print(open(path).read())
           PYEOF
 
-      - name: محدود کردن معماری پردازنده (کاهش حجم APK)
-        run: |
-          python3 - << 'PYEOF'
-          import os, re
-          path = "android/app/build.gradle.kts"
-          is_kts = True
-          if not os.path.exists(path):
-              path = "android/app/build.gradle"
-              is_kts = False
-          with open(path) as f:
-              c = f.read()
-          if "abiFilters" not in c:
-              ndk_block = (
-                  '\n        ndk {\n            abiFilters += setOf("arm64-v8a", "armeabi-v7a")\n        }\n'
-              ) if is_kts else (
-                  '\n        ndk {\n            abiFilters "arm64-v8a", "armeabi-v7a"\n        }\n'
-              )
-              idx = c.find("defaultConfig {")
-              brace_idx = c.find("{", idx) + 1
-              c = c[:brace_idx] + ndk_block + c[brace_idx:]
-              with open(path, "w") as f:
-                  f.write(c)
-              print("abiFilters added (dropped x86_64) to", path)
-          else:
-              print("abiFilters already present, skipping")
-          PYEOF
-
       - name: تنظیم امضای انتشار (Signing)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -428,7 +401,7 @@ jobs:
           echo "=== لیست همه‌ی فایل‌های build.gradle موجود ==="
           find android -name "build.gradle*" -maxdepth 3
 
-      - run: flutter build apk --release
+      - run: flutter build apk --release --target-platform android-arm,android-arm64
 
       - uses: actions/upload-artifact@v4
         with:
