@@ -604,7 +604,7 @@
       "icon": "iran",
       "color": "#37474F",
       "description": "راهنمای اختصاصی پراید، پژو، سمند، دنا، هایما و...",
-      "isPro": false,
+      "isPro": true,
       "sections": [
         {
           "id": "peugeot_405",
@@ -686,7 +686,7 @@
       "icon": "table",
       "color": "#4527A0",
       "description": "گشتاور پیچ‌ها، روغن‌ها، فشار تایر و مشخصات شمع",
-      "isPro": false,
+      "isPro": true,
       "sections": [
         {
           "id": "torque_specs",
@@ -896,7 +896,7 @@
       "icon": "tires",
       "color": "#455A64",
       "description": "اندازه و کد لاستیک، الگوهای سایش، فشار باد، عمر و تاریخ تولید، ارتباط با تنظیم زوایا",
-      "isPro": false,
+      "isPro": true,
       "sections": [
         {
           "id": "tire_basics",

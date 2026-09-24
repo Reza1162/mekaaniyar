@@ -55,7 +55,7 @@ class MechanicReportGenerator {
         build: (context) => [
           pw.Header(
             level: 0,
-            child: pw.Text(_shape('گزارش خودرو — مکانیار'), style: const pw.TextStyle(fontSize: 20)),
+            child: pw.Text(_shape('گزارش خودرو — مکانیک یار'), style: const pw.TextStyle(fontSize: 20)),
           ),
           pw.SizedBox(height: 12),
           _sectionTitle('اطلاعات خودرو'),
@@ -117,7 +117,7 @@ class MechanicReportGenerator {
           ],
           pw.SizedBox(height: 24),
           pw.Text(
-            _shape('این گزارش توسط اپلیکیشن مکانیار تولید شده و صرفاً جنبه‌ی اطلاع‌رسانی دارد.'),
+            _shape('این گزارش توسط اپلیکیشن مکانیک یار تولید شده و صرفاً جنبه‌ی اطلاع‌رسانی دارد.'),
             style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
             textDirection: pw.TextDirection.rtl,
           ),

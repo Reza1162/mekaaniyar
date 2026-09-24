@@ -38,7 +38,7 @@ class NotificationService {
     await _plugin.periodicallyShow(
       1001,
       'یادآوری سرویس خودرو',
-      'کیلومتر خودرو رو توی مکانیار بروزرسانی کن تا سرویس‌های موعد رسیده رو ببینی',
+      'کیلومتر خودرو رو توی مکانیک یار بروزرسانی کن تا سرویس‌های موعد رسیده رو ببینی',
       RepeatInterval.weekly,
       details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

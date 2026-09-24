@@ -14,7 +14,7 @@ class MekaaniyarApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'مکانیار',
+      title: 'مکانیک یار',
       debugShowCheckedModeBanner: false,
       locale: const Locale('fa', 'IR'),
       builder: (context, child) => Directionality(

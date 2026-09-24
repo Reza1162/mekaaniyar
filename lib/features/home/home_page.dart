@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('مکانیار'),
+        title: const Text('مکانیک یار'),
         actions: [
           IconButton(
             icon: const Icon(Icons.quiz_outlined),
@@ -293,7 +293,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('مکانیار',
+                const Text('مکانیک یار',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,

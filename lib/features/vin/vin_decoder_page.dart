@@ -107,7 +107,7 @@ class _VinDecoderPageState extends State<VinDecoderPage> {
             if (r.manufacturer.isEmpty) ...[
               const SizedBox(height: 12),
               const Text(
-                'این کد سازنده هنوز در پایگاه‌ی محلی مکانیار ثبت نشده. برای استعلام دقیق‌تر می‌توانید از سایت‌های '
+                'این کد سازنده هنوز در پایگاه‌ی محلی مکانیک یار ثبت نشده. برای استعلام دقیق‌تر می‌توانید از سایت‌های '
                 'رسمی رمزگشایی VIN یا کارشناس رسمی همان برند کمک بگیرید.',
                 style: TextStyle(fontSize: 12, color: Colors.orange),
               ),

@@ -72,7 +72,7 @@ class _OnboardingScreenState extends State<_OnboardingScreen> {
     _Slide(
       Icons.garage_outlined,
       'گاراژ من',
-      'خودروی خودت رو ثبت کن تا مکانیار خودش یادآوری سرویس‌های دوره‌ای (روغن، تسمه تایم، لنت) رو بهت بده.',
+      'خودروی خودت رو ثبت کن تا مکانیک یار خودش یادآوری سرویس‌های دوره‌ای (روغن، تسمه تایم، لنت) رو بهت بده.',
       const Color(0xFF2E7D32),
     ),
     _Slide(

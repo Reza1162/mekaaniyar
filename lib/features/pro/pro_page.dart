@@ -70,7 +70,7 @@ class _ProPageState extends State<ProPage> {
               children: const [
                 Icon(Icons.workspace_premium, color: Colors.amber, size: 48),
                 SizedBox(height: 12),
-                Text('مکانیار حرفه‌ای',
+                Text('مکانیک یار حرفه‌ای',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
